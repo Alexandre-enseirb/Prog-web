@@ -1,0 +1,14 @@
+doctype html
+html(lang="fr")
+    head
+    title="monsite"
+    body
+        each nom in user 
+            p="bonjour " + nom.username
+
+
+        form(action="/inscriptionadd" method="POST")
+            input(type="text" name="username" placeholder="username")
+            input(type="text" name="address" placeholder="mail address")
+            input(type="password" name="secretcode" placeholder="secret code") 
+            input(type="submit" value="Envoyer les données")
