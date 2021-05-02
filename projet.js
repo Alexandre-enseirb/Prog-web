@@ -11,7 +11,6 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 app.set('views', './views'); //les views sont dans le dossier views
 app.set('view engine', 'jade');
 //on a mis ces 2 lignes apres avoir installé jade
-const session = require('express-session')
 
 app.get('/inscription',async(req, res) =>{
     const db = await openDb()
@@ -23,7 +22,7 @@ app.get('/inscription',async(req, res) =>{
     res.render("inscription",{user: users})
 })
 
-var reg = RegExp(".com")
+
 app.post('/inscriptionadd',async(req,res)=>{
     const nameInBody = req.body.username
     const addressInBody = req.body.address
@@ -44,12 +43,10 @@ app.post('/inscriptionadd',async(req,res)=>{
                 await db.run(`
                     INSERT INTO user (username,mailaddress,secretcode) VALUES(?,?,?)
                 `,req.params.username,req.params.address,req.params.secretcode)
-                res.redirect("/inscription")
             } 
            
             
         } 
-        
         res.redirect("/inscription")
     }
     res.render("username4")

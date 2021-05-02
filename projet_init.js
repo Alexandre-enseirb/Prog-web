@@ -1,12 +1,19 @@
 const {openDb} = require("./projet_db")
-const tablesNames = ["user"]
+const tablesNames = ["user","lien"]
 
 
 async function createusername(db){
     await db.run(`
-    INSERT INTO user (username,mailaddress,secretcode) VALUES("hello","lyx990816@gmail.com","donttouch")
+    INSERT INTO user (username,mailaddress,secretcode) VALUES("Yixin","lyx990816@gmail.com","donttouch")
     `)
   }
+
+  async function createusername(db){
+    await db.run(`
+    INSERT INTO lien (Title,content,user_id) VALUES("fisrt_article","Helloworld","1")
+    `)
+  }
+
 
 
 async function createTables(db){
@@ -19,7 +26,17 @@ async function createTables(db){
 
        );   
 `) 
-   return await Promise.all([userlist])
+   const lienlist = db.run(`
+     CREATE TABLE IF NOT EXISTS lien(
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        Title varchar(255),
+        Content varchar(255),
+        user_id int(11) NOT NULL,
+        FOREIGN KEY	(user_id) REFERENCES user (id)
+
+       );   
+`) 
+   return await Promise.all([userlist,lienlist])
 }
 
 async function dropTables(db){
