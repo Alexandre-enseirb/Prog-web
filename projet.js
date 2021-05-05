@@ -43,13 +43,27 @@ app.post('/inscriptionadd',async(req,res)=>{
                 await db.run(`
                     INSERT INTO user (username,mailaddress,secretcode) VALUES(?,?,?)
                 `,req.params.username,req.params.address,req.params.secretcode)
-            } 
-           
-            
+                res.redirect("/inscription")
+            }
+            else{ 
+                //res.render("username4")
+                console.log("pls enter secret code")
+                res.redirect("/inscription")
+            }
         } 
+        //alert("pls enter the correct mail！")
+       //res.redirect("/inscription")
+       else{
+        //res.render("addressmailfaute")
+        console.log("pls enter email correct")
         res.redirect("/inscription")
+       }
     }
-    res.render("username4")
+    else{
+    //res.render("username4")
+    console.log("user name must have 4")
+    res.redirect("/inscription")
+    }
 })
 
 app.get('/authen',async(req,res)=>{
@@ -62,24 +76,24 @@ app.post('/signin',async(req,res)=>{
     const id = req.params.id
     const addressInBody = req.body.address
     const secretInBody = req.body.secretcode
-/*    const user = await db.all(`
-    SELECT * FROM user
-    `,[id])
-
-    const result = user.find(c=> c.mailaddress == addressInBody)
-*/
     let result = await db.all(`
     SELECT * FROM user
     where mailaddress=?
     `,[addressInBody])
     console.log(result)
 
-    
-    
-    console.log(result)
-    if(result != "")
+    let secret_verifi = await db.all(`
+        SELECT * FROM user
+        where secretcode=?
+    `,[secretInBody])
+    console.log(secret_verifi)
+
+    if(result != ""&& secret_verifi != ""&& result[0].id==secret_verifi[0].id) 
     {
-        res.redirect("accuille")
+        res.redirect("/accuille")
+    }
+    else{
+        res.redirect("/inscription")
     }
     
 })

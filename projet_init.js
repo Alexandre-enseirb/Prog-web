@@ -20,7 +20,7 @@ async function createTables(db){
    const userlist = db.run(`
      CREATE TABLE IF NOT EXISTS user(
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        username varchar(255),
+        username varchar(255)
         mailaddress varchar(255),
         secretcode varchar(255)
 
@@ -53,4 +53,3 @@ async function dropTables(db){
     await createTables(db)
     await createusername(db)
   })()
-  
