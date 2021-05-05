@@ -4,15 +4,15 @@ const tablesNames = ["user","lien"]
 
 async function createusername(db){
     await db.run(`
-    INSERT INTO user (username,mailaddress,secretcode) VALUES("Yixin","lyx990816@gmail.com","donttouch")
+    INSERT INTO user (username,mailaddress,secretcode,isAdmin) VALUES("Yixin","lyx990816@gmail.com","donttouch",1)
     `)
-  }
+}
 
-  async function createusername(db){
+async function createlink(db){
     await db.run(`
     INSERT INTO lien (Title,content,user_id) VALUES("fisrt_article","Helloworld","1")
     `)
-  }
+}
 
 
 
@@ -20,12 +20,15 @@ async function createTables(db){
    const userlist = db.run(`
      CREATE TABLE IF NOT EXISTS user(
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        username varchar(255)
+        username varchar(255),
         mailaddress varchar(255),
-        secretcode varchar(255)
-
+        secretcode varchar(255),
+        isAdmin int(1)
        );   
-`) 
+`) //isAdmin correspond au fait de pouvoir editer tous les posts
+      // comme dans le TP précédent
+      // A voir si on le gardera
+      
    const lienlist = db.run(`
      CREATE TABLE IF NOT EXISTS lien(
         id INTEGER PRIMARY KEY AUTOINCREMENT, 

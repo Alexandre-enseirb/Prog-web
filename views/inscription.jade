@@ -6,9 +6,17 @@ html(lang="fr")
         each nom in user 
             p="bonjour " + nom.username
 
-
-        form(action="/inscriptionadd" method="POST")
-            input(type="text" name="username" placeholder="username")
-            input(type="text" name="address" placeholder="mail address")
-            input(type="password" name="secretcode" placeholder="secret code") 
-            input(type="submit" value="Envoyer les données")
+        if (logged)
+            p="ERREUR ! Vous êtes déjà connecté."
+        else
+            form(action="/inscriptionadd" method="POST")
+                input(type="text" name="username" placeholder="username")
+                input(type="text" name="address" placeholder="mail address")
+                input(type="password" name="secretcode" placeholder="secret code") 
+                input(type="submit" value="Envoyer les données")
+                if (nopasswd)
+                    p="Veuillez renseigner un mot de passe"
+                if (shortUsername)
+                    p="Veuillez entrer un pseudonyme de plus de 4 caractères"
+                if (nomail)
+                    p="Mail invalid"
