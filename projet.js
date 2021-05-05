@@ -4,13 +4,17 @@ const bodyParser = require('body-parser');
 const app = express() //express sans argument : cree une app?
 const port = 3000
 const session = require("express-session");
-const SQLiteStore = require('connect-sqlite3')(session);
+try{
+    const SQLiteStore = require('connect-sqlite3')(session);
+}catch(e){
+    console.log("connect-sqlite3 wasn't found. Aborting.")
+}
 const {openDb} = require("./projet_db")
 
 const userAdmin=["root","retel","admin@test.com"];
 
 const sess={
-    store: new SQLiteStore,
+    //store: new SQLiteStore,
     secret: 'secret key',
     resave: true,
     rolling: true,
