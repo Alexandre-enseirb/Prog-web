@@ -1,24 +1,6 @@
 extends layout
 block body
-    each lien in posts 
-        p="bonjour " + lien.Content
-        p= "       this is content :   " + lien.Content
-        each message in response 
-            if (message.lien_id == lien.id)
-                p="   this is response :  " + message.Content
-        form(action="/response" method="POST")
-            input(type="text" name="res_content" placeholder="response..")
-            input(type="text" name="res_userid" placeholder="userid")
-            input(type="text" name="res_lienid" placeholder="lienid")
-            input(type="submit" value="Envoyer les données")
-
-    p="create a new post here"
-    form(action="/postpost" method="POST")
-        input(type="text" name="title" placeholder="title")
-        input(type="text" name="content" placeholder="content")
-        input(type="text" name="userid" placeholder="Id") 
-        input(type="submit" value="Envoyer les données")
-            
+           
     header
         nav(style="max-width:1580px;text-align: center")
             div.row.align-items-left.py-2
@@ -37,7 +19,7 @@ block body
                                 p="It's lunatic time"
                         else
                             li.nav-item
-                                a.nav-link.active(href="http://localhost:3000/WIP")="Log in"
+                                a.nav-link.active(href="http://localhost:3000/authen")="Log in"
                             li.nav-item
                                 a.nav-link.active(href="http://localhost:3000/inscription")="Sign up"
 
@@ -46,4 +28,5 @@ block body
         div.container.bg-light.mb-3.text-center
             p.text-right="Lol" 
 
+         
     script(src="scripts/test.js")

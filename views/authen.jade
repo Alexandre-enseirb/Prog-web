@@ -2,10 +2,14 @@ html(lang="fr")
     head
     title="authentification"
     body 
-            p="bonjour, please enter your email address and passeword"
+        
+        if (failed)
+            p="Une erreur a été rencontrée. Veuillez vérifier votre mail et mot de passe."
+        else
+            p="Bonjour."
 
 
         form(action="/signin" method="POST")
-            input(type="text" name="address" placeholder="mail address")
-            input(type="password" name="secretcode" placeholder="secret code") 
-            input(type="submit" value="Envoyer les données")
+            input(type="text" name="address" placeholder="Adresse mail")
+            input(type="password" name="secretcode" placeholder="Mot de passe") 
+            input(type="submit" value="Connexion")
