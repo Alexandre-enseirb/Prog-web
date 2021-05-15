@@ -4,8 +4,10 @@ const bodyParser = require('body-parser');
 const app = express() //express sans argument : cree une app?
 const port = 3000
 const session = require("express-session");
+let hasSQLite=false;
 try{
     const SQLiteStore = require('connect-sqlite3')(session);
+    hasSQLite=true;
 }catch(e){
     console.log("connect-sqlite3 wasn't found. Aborting.")
 }
@@ -27,6 +29,9 @@ const sess={
     saveUnitialized: true
 }
 
+if (hasSQLite){
+    sess.store=new SQLiteStore
+}
 
 // app setup
 app.use(bodyParser.json()); // support json encoded bodies
@@ -112,14 +117,15 @@ app.post('/inscriptionadd',async(req,res)=>{
                 console.log("pls enter secret code")
                 res.redirect("/home")
             }
+        
         } 
         //alert("pls enter the correct mail！")
        //res.redirect("/inscription")
-       else{
+        else{
         //res.render("addressmailfaute")
         console.log("pls enter email correct")
         res.redirect("/inscription")
-       }
+        }
     }
     else{
     //res.render("username4")
@@ -160,34 +166,39 @@ app.post('/response',async(req,res)=>{
 
 app.get('/authen',async(req,res)=>{
 
-    res.render("authen")    
+    res.render("authen",{failed: req.query.failed})    
 })
 
 app.post('/signin',async(req,res)=>{
+    // login page
+    let failed=false;
     const db = await openDb()
     const id = req.params.id
-    const addressInBody = req.body.address
-    const secretInBody = req.body.secretcode
+    const addressInBody = req.body.address                                          
+    // suggestion : 
+    // addressInBody=addressInBody.toLowerCase(); // pour eviter que les majuscules faussent la comparaison
+    const secretInBody = req.body.secretcode                                        
     let result = await db.all(`
     SELECT * FROM user
     where mailaddress=?
-    `,[addressInBody])
+    `,[addressInBody])                                                              // request for user
     console.log('this is result')
     console.log(result)
 
     let secret_verifi = await db.all(`
         SELECT * FROM user
         where secretcode=?
-    `,[secretInBody])
+    `,[secretInBody])                                                               // request for password
     console.log('this is seccret')
     console.log(secret_verifi)
-
-    if(result != ""&& secret_verifi != ""&& result[0].id==secret_verifi[0].id) 
+    
+    if(result != ""&& secret_verifi != ""&& result[0].id==secret_verifi[0].id)      // correct user
     {
-        res.redirect("/home")
+        res.redirect("/home")                                                       // login succesful
     }
     else{
-        res.redirect("/inscription")
+        failed=true;                                                                // for redirection
+        res.redirect("/authen")                                                     // login failed
     }
     
 })
@@ -218,8 +229,28 @@ app.get('/WIP',(req,res)=>{
     res.render("wip");
 })
 
+app.get('/test',async(req,res)=>{
+    // a page to edit anytime we want to make some tests without breaking the rest
+    data={};
+    if (req.session.logged){
+        data.logged=true;
+    }
+    const db = await openDb()
+    const id = req.params.id 
+    const posts = await db.all(`
+    SELECT * FROM lien
+    `,[id])
+    const response = await db.all(`
+    SELECT * FROM message
+    `,[id])
+    console.log(posts)
+    data.posts = posts
+    data.response = response
+    res.render("test",data)
+})
 
 
 app.listen(port,() => {
     console.log("Listening on port ", port)
 })
+

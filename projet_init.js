@@ -11,13 +11,13 @@ async function createusername(db){
 
 async function createlink(db){
     await db.run(`
-    INSERT INTO lien (Title,Content,user_id,votes) VALUES("fisrt_article","How are u","1","0")
+    INSERT INTO lien (Title,Content,user_id,votes) VALUES("first article","How are you ?","1","0")
     `)
 }
 
 async function createmessage(db){
   await db.run(`
-  INSERT INTO message (Content,user_id,lien_id) VALUES("im fine thank u ","2","1")
+  INSERT INTO message (Content,user_id,lien_id) VALUES("I'm fine thank you ","2","1")
   `)
 }
 
