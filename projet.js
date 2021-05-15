@@ -91,7 +91,7 @@ app.post('/inscriptionadd',async(req,res)=>{
             
             if(secretInBody){ // verify passwd has been entered
                 req.params.secretcode = secretInBody;
-                console.log(req.body.username.length)
+                //console.log(req.body.username.length)
                 req.session.name=nameInBody;
                 const db = await openDb()
                 const id = req.params.id
@@ -128,6 +128,36 @@ app.post('/inscriptionadd',async(req,res)=>{
     }
 })
 
+app.post('/postpost',async(req,res)=>{
+  const contentinbody = req.body.content
+  const titleinbody = req.body.title
+  const useridinbody = req.body.userid
+  const db = await openDb()
+  req.params.content = contentinbody;
+  req.params.title = titleinbody;
+  req.params.userid = useridinbody
+  await db.run(`
+        INSERT INTO lien (Title,Content,user_id,votes) VALUES(?,?,?,0)
+    `,req.params.content,req.params.title,req.params.userid)
+  
+    res.redirect("/home")  // how to use userid? 
+})
+
+app.post('/response',async(req,res)=>{
+    const contentinbody = req.body.res_content
+    const useridinbody = req.body.res_userid
+    const lienidinbody = req.body.res_lienid
+    const db = await openDb()
+    req.params.content = contentinbody;
+    req.params.userid = useridinbody;
+    req.params.lienid = lienidinbody;
+    await db.run(`
+        INSERT INTO message(Content,user_id,lien_id) VALUES(?,?,?)
+    `,req.params.content,req.params.userid,req.params.lienid)
+
+    res.redirect("/home")
+})
+
 app.get('/authen',async(req,res)=>{
 
     res.render("authen")    
@@ -142,12 +172,14 @@ app.post('/signin',async(req,res)=>{
     SELECT * FROM user
     where mailaddress=?
     `,[addressInBody])
+    console.log('this is result')
     console.log(result)
 
     let secret_verifi = await db.all(`
         SELECT * FROM user
         where secretcode=?
     `,[secretInBody])
+    console.log('this is seccret')
     console.log(secret_verifi)
 
     if(result != ""&& secret_verifi != ""&& result[0].id==secret_verifi[0].id) 
@@ -160,11 +192,24 @@ app.post('/signin',async(req,res)=>{
     
 })
 
+
+
 app.get('/home',async(req, res) =>{
     data={};
     if (req.session.logged){
         data.logged=true;
     }
+    const db = await openDb()
+    const id = req.params.id 
+    const posts = await db.all(`
+    SELECT * FROM lien
+    `,[id])
+    const response = await db.all(`
+    SELECT * FROM message
+    `,[id])
+    console.log(posts)
+    data.posts = posts
+    data.response = response
     res.render("home",data)
 })
 
@@ -172,6 +217,8 @@ app.get('/WIP',(req,res)=>{
     // placeholder
     res.render("wip");
 })
+
+
 
 app.listen(port,() => {
     console.log("Listening on port ", port)

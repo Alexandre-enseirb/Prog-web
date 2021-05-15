@@ -1,20 +1,25 @@
 const {openDb} = require("./projet_db")
-const tablesNames = ["user","lien"]
+const tablesNames = ["user","lien","message"]
 
 
 async function createusername(db){
     await db.run(`
-    INSERT INTO user (username,mailaddress,secretcode,isAdmin) VALUES("Yixin","lyx990816@gmail.com","donttouch",1)
+    INSERT INTO user (username,mailaddress,secretcode,isAdmin) VALUES("Yixin","lyx990816@gmail.com","donttouch",1),
+    ("Alexandre","alexandre@gmail.com","qwerty",0);
     `)
 }
 
 async function createlink(db){
     await db.run(`
-    INSERT INTO lien (Title,content,user_id) VALUES("fisrt_article","Helloworld","1")
+    INSERT INTO lien (Title,Content,user_id,votes) VALUES("fisrt_article","How are u","1","0")
     `)
 }
 
-
+async function createmessage(db){
+  await db.run(`
+  INSERT INTO message (Content,user_id,lien_id) VALUES("im fine thank u ","2","1")
+  `)
+}
 
 async function createTables(db){
    const userlist = db.run(`
@@ -35,9 +40,20 @@ async function createTables(db){
         Title varchar(255),
         Content varchar(255),
         user_id int(11) NOT NULL,
+        votes int(11) NOT NULL,
         FOREIGN KEY	(user_id) REFERENCES user (id)
 
        );   
+`) 
+    const messagelist = db.run(`
+    CREATE TABLE IF NOT EXISTS message(
+      id INTEGER PRIMARY KEY AUTOINCREMENT, 
+      Content varchar(200) NOT NULL,
+      lien_id INT(10) NOT NULL,
+      user_id INT(10) NOT NULL,
+      FOREIGN KEY	(user_id) REFERENCES user (id)
+      FOREIGN KEY (user_id) REFERENCES lien (id)
+      );   
 `) 
    return await Promise.all([userlist,lienlist])
 }
@@ -55,4 +71,6 @@ async function dropTables(db){
     await dropTables(db)
     await createTables(db)
     await createusername(db)
+    await createlink(db)
+    await createmessage(db)
   })()

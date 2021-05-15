@@ -1,0 +1,38 @@
+extends layout
+block body
+    each nom in posts 
+            p="bonjour " + nom.Content
+    form(action="/postpost" method="POST")
+        input(type="text" name="title" placeholder="title")
+        input(type="text" name="content" placeholder="content")
+        input(type="text" name="userid" placeholder="Id") 
+        input(type="submit" value="Envoyer les données")
+            
+    header
+        nav(style="max-width:1580px;text-align: center")
+            div.row.align-items-left.py-2
+                div.col-1
+                    img(src="images/logo.png")
+                div.col.2(style="text-align:left")
+                    h4.text-muted.m-0="Bluedit"
+                div.col.d-flex.justify-content-end
+                    
+                    
+                    ul.nav.nav-pills
+                        if (logged)
+                            if (admin)
+                                p="ARTHAAAAAAAAS"
+                            else
+                                p="It's lunatic time"
+                        else
+                            li.nav-item
+                                a.nav-link.active(href="http://localhost:3000/WIP")="Log in"
+                            li.nav-item
+                                a.nav-link.active(href="http://localhost:3000/inscription")="Sign up"
+
+
+    section
+        div.container.bg-light.mb-3.text-center
+            p.text-right="Lol" 
+
+    script(src="scripts/test.js")
