@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>无标题文档</title>
+    <style>
+      #container{
+      background:white;
+      color:#2289F0;
+      padding:15px;
+      margin:100px auto 0px;
+      width:600px;
+      text-align:center;
+      font-family:"微软雅黑 Light";
+      box-shadow:10px 10px 15px  black  ;
+      }
+      hr{width:80%;
+      border:#2289F0 1px  solid  ;
+      margin-bottom:15px;
+      }
+      body{background:#cccccc;}
+      input{width:180px;
+      height:20px;
+      margin:5px;
+      font-size:16px;
+      font-family:"微软雅黑 Light";}
+      button{width:120px;
+      height:40px;
+      background:#2289F0;
+      border:0px;
+      color:white;
+      margin:10px;
+      font-size:18px;
+      font-family:"微软雅黑 Light";
+      font-weight:bold;}
+      button:hover{background:#00c8D0;}
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <h1>INSCRIPTION</h1>
+      <hr>
+      <!-- -表单-->
+      <form action="/inscriptionadd" method="POST">
+        <label>Username:
+          <input type="text" name="username" placeholder="username" required="">
+          <!-- placeholder=添加提示语句  required非空验证-->
+        </label><br>
+        <label>E-mail  ：
+          <input type="text" name="address" placeholder="mail address" required="">
+        </label><br>
+        <label>Secret Code：
+          <input type="password" name="secretcode" placeholder="secret code" required="">
+        </label><br>
+        <input type="submit" value="Envoyer les données">
+      </form>
+    </div>
+  </body>
+</html>

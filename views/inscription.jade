@@ -1,22 +1,62 @@
 doctype html
-html(lang="fr")
-    head
-    title="monsite"
-    body
-        each nom in user 
-            p="bonjour " + nom.username
-
-        if (logged)
-            p="ERREUR ! Vous êtes déjà connecté."
-        else
-            form(action="/inscriptionadd" method="POST")
-                input(type="text" name="username" placeholder="username")
-                input(type="text" name="address" placeholder="mail address")
-                input(type="password" name="secretcode" placeholder="secret code") 
-                input(type="submit" value="Envoyer les données")
-                if (nopasswd)
-                    p="Veuillez renseigner un mot de passe"
-                if (shortUsername)
-                    p="Veuillez entrer un pseudonyme de plus de 4 caractères"
-                if (nomail)
-                    p="Mail invalid"
+html
+  head
+    meta(charset='utf-8')
+    title 无标题文档
+    style.
+      #container{
+      background:white;
+      color:#2289F0;
+      padding:15px;
+      margin:100px auto 0px;
+      width:600px;
+      text-align:center;
+      font-family:"微软雅黑 Light";
+      box-shadow:10px 10px 15px  black  ;
+      }
+      hr{width:80%;
+      border:#2289F0 1px  solid  ;
+      margin-bottom:15px;
+      }
+      body{background:#cccccc;}
+      input{width:180px;
+      height:20px;
+      margin:5px;
+      font-size:16px;
+      font-family:"微软雅黑 Light";}
+      button{width:120px;
+      height:40px;
+      background:#2289F0;
+      border:0px;
+      color:white;
+      margin:10px;
+      font-size:18px;
+      font-family:"微软雅黑 Light";
+      font-weight:bold;}
+      button:hover{background:#00c8D0;}
+  body
+    #container
+      h1 INSCRIPTION
+      hr
+      // -表单
+      form(action="/inscriptionadd" method="POST")
+        label
+          | Username:
+          input(type="text" name="username" placeholder="username" required='')
+          // placeholder=添加提示语句  required非空验证
+        br
+        label
+          | E-mail  ：
+          input(type="text" name="address" placeholder="mail address" required='') 
+        br
+        label
+          | Secret Code：
+          input(type="password" name="secretcode" placeholder="secret code" required='') 
+        br
+        input(type="submit" value="Envoyer les données") 
+        if (nopasswd)
+            p="Veuillez renseigner un mot de passe"
+        if (shortUsername)
+            p="Veuillez entrer un pseudonyme de plus de 4 caractères"
+        if (nomail)
+            p="Mail invalid"
