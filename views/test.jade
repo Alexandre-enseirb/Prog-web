@@ -1,0 +1,74 @@
+extends layout
+block body
+    // a page to edit anytime we want to make some tests without breaking the rest of the website.
+    // refered to as localhost:3000/test
+    // no direct link should be refering it, and no redirections to it should exist.
+
+    
+    // try to define what a post will look like
+    
+    section
+        div.container.bg-light.py-5.text-center.mb-3
+            h1="Recent posts"
+        if (posts)
+            each lien in posts
+                div.container.bg-dark.text-light.py-3
+                    // each post is one row
+                    //lien
+                        //id
+                        //Title
+                        //Content
+                        //user_id references user.id
+                        //votes
+
+                    div.row
+                        div.col-9.col-lg-1.text-align-center 
+                            //test to display votes
+                            p=lien.votes
+                           
+                        div.col-9.col-lg-7
+                            // title display
+                            h1="Title "+lien.Title
+                    div.row
+                        // for content
+                        div.col-9.col-lg-1
+                        div.col-9
+                            p="Content :"+lien.Content
+                    if (response)
+                        each message in response
+                            if (message.lien_id == lien.id)
+                                div.row
+                                    div.col-9.col-lg-2
+                                    div.col-9
+                                        p="Comment : "+message.Content 
+                        
+                            
+                    
+                    
+        else
+            p="Désolé, on n'a rien trouvé à t'afficher"        
+div.container
+            
+        // section has two paddings and a main column.
+        
+
+    if (posts)    
+        each lien in posts 
+            p="bonjour " + lien.Content
+            p= "       this is content :   " + lien.Content
+            each message in response 
+                if (message.lien_id == lien.id)
+                    p="   this is response :  " + message.Content
+            form(action="/response" method="POST")
+                input(type="text" name="res_content" placeholder="response..")
+                input(type="text" name="res_userid" placeholder="userid")
+                input(type="text" name="res_lienid" placeholder="lienid")
+                input(type="submit" value="Envoyer les données")
+
+        p="create a new post here"
+        form(action="/postpost" method="POST")
+            input(type="text" name="title" placeholder="title")
+            input(type="text" name="content" placeholder="content")
+            input(type="text" name="userid" placeholder="Id") 
+            input(type="submit" value="Envoyer les données")
+
