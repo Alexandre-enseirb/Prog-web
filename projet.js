@@ -21,8 +21,9 @@ const sess={
     resave: true,
     rolling: true,
     admin: false,
-    name: undefined,
+    username: undefined,
     logged: false,
+    user_id: undefined,
     cookie: {
         maxAge: 10000*3600
     },
@@ -42,7 +43,21 @@ app.set('views', './views'); //les views sont dans le dossier views
 app.set('view engine', 'jade');
 //on a mis ces 2 lignes apres avoir installé jade
 
+// Useful functions
+async function addPost(db,post){
+    const insertRequest = await db.prepare("INSERT INTO lien (Title, Content, user_id, votes) VALUES (?,?,?,?)")
+    return await insertRequest.run(post)
+}
 
+async function addUser(db, user){
+    const insertRequest = await db.prepare("INSERT INTO user (username, mailaddress, secretcode, isAdmin) VALUES (?,?,?,?)")
+    return await insertRequest.run(user)
+}
+
+async function addComment(db, comment){
+    const insertRequest = await db.prepare("INSERT INTO message (Content, user_id, lien_id) VALUES (?,?,?)")
+    return await insertRequest.run(comment)
+}
 
 app.get("/",(req,res)=>{
     // main redirection for the website
@@ -235,6 +250,7 @@ app.get('/test',async(req,res)=>{
     if (req.session.logged){
         data.logged=true;
     }
+    data.logged=true;
     const db = await openDb()
     const id = req.params.id 
     const posts = await db.all(`
@@ -243,12 +259,58 @@ app.get('/test',async(req,res)=>{
     const response = await db.all(`
     SELECT * FROM message
     `,[id])
-    console.log(posts)
+    console.log(response)
     data.posts = posts
     data.response = response
     res.render("test",data)
 })
 
+app.post('/add',async(req,res)=>{
+    // fonction doublon de postpost, afin de ne pas tout casser avec mes tests
+    const db=await openDb()
+    let username;
+    let content;
+    let user_id;
+    let Title="New post" // until I add a Title input
+    if (req.session.user_id!=undefined){
+        user_id=req.session.user_id;
+    }else{
+        user_id=2; // temporary solution
+    }
+    console.log(req.query);
+    content=req.body.post;
+    //await db.run(`
+    //INSERT INTO lien (Title, Content, user_id, votes) VALUES (`+Title+`,`+content+`,`+user_id+`,`+"0"+`)`)
+    addPost(db,[Title,content,user_id,"0"])
+    res.redirect("test");
+})
+
+app.post('/comment',async(req,res)=>{
+    // encore une fois, fonction doublon, je ferai un big merge quand tout fonctionnera impeccablement
+    const db=await openDb()
+    let username;
+    let comment;
+    let user_id;
+    let post_id;
+    
+    // we get the comment
+
+    comment=req.body.comment
+    post_id=req.body.post_id
+    let Comment={};
+    Comment.content=comment;
+    Comment.post_id=post_id;
+    
+    if (req.session.user_id!=undefined){
+        user_id=req.session.user_id
+    }else{
+        user_id=2;
+    }
+    Comment.user_id=user_id;
+    console.log(Comment);
+    addComment(db, [comment,user_id,post_id])
+    res.redirect("test")
+})
 
 app.listen(port,() => {
     console.log("Listening on port ", port)
