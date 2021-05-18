@@ -5,7 +5,7 @@ const tablesNames = ["user","lien","message"]
 async function createusername(db){
     await db.run(`
     INSERT INTO user (username,mailaddress,secretcode,isAdmin) VALUES("Yixin","lyx990816@gmail.com","donttouch",1),
-    ("Alexandre","alexandre@gmail.com","qwerty",0);
+    ("Alexandre","alexandre@gmail.com","qwerty",1);
     `)
 }
 
