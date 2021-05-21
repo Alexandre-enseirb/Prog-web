@@ -1,0 +1,7 @@
+Exemples de scripts (incomplets malheureusement), pour gérer la connexion.
+
+La partie base de donnée manque, mais la gestion de la session est là.
+
+Les données de la session sont dans req.sess (comme le username, ou le fait d'être admin)
+
+Ces données sont transférées à la page via le data.
