@@ -25,7 +25,7 @@ async function createmessage(db){
 
 async function createupvote(db){
     await db.run(`
-    INSERT INTO upvotes (lien_id, response_id, user_id) VALUES (1,0,2), (1,1,1)`)
+    INSERT INTO votes (lien_id, response_id, user_id, type) VALUES (1,0,2,1), (1,1,1,1)`)
 }
 
 async function createTables(db){
@@ -68,29 +68,19 @@ async function createTables(db){
     // lien_id représente le post sur lequel on vote
     // response_id représente le commentaire de l'upvote.
     // Si le champ response_id vaut 0, le vote revient au post initial.
-    const upvotes = db.run(`
-      CREATE TABLE IF NOT EXISTS upvotes(
+    const votes = db.run(`
+      CREATE TABLE IF NOT EXISTS votes(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         lien_id INT(10) NOT NULL,
         user_id INT(10) NOT NULL,
         response_id INT(10) NOT NULL,
+        type INT(2) NOT NULL,
         FOREIGN KEY (user_id) REFERENCES user (id)
         FOREIGN KEY (lien_id) REFERENCES lien (id)
         FOREIGN KEY (response_id) REFERENCES message (id)
         );
 `)
 
-    const downvotes = db.run(`
-      CREATE TABLE IF NOT EXISTS downvotes(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        lien_id INT(10) NOT NULL,
-        user_id INT(10) NOT NULL,
-        response_id INT(10) NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES user (id)
-        FOREIGN KEY (lien_id) REFERENCES lien (id)
-        FOREIGN KEY (response_id) REFERENCES message (id)
-        );
-`)
 
    
     return await Promise.all([userlist,lienlist])

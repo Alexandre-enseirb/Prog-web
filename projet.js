@@ -37,6 +37,7 @@ if (hasSQLite){
 // app setup
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+app.use(bodyParser.json());
 app.use(express.static("public")); // not mine, for image display
 app.use(session(sess))
 app.set('views', './views'); //les views sont dans le dossier views
@@ -58,6 +59,24 @@ async function addComment(db, comment){
     const insertRequest = await db.prepare("INSERT INTO message (Content, user_id, lien_id,votes) VALUES (?,?,?,0)")
     return await insertRequest.run(comment)
 }
+/*
+async function addVote(db, Vote_type, Vote){
+    if (Vote_type){
+        // 1 is for upvote
+        const insertRequest = await db.prepare("INSERT INTO upvotes (lien_id, response_id, user_id) VALUES (?,?,?)")
+    }
+    else
+    {
+        const insertRequest = await db.prepare("INSERT INTO downvotes (lien_id, response_id, user_id) VALUES (?,?,?)")
+    }
+    return await insertRequest.run(Vote)
+}*/
+
+async function addVote(db, Vote){
+    const insertRequest = await db.prepare("INSERT INTO votes (lien_id, user_id, response_id, type) VALUES (?,?,?,?)")
+    return await insertRequest.run(Vote)
+}
+
 
 app.get("/",(req,res)=>{
     // main redirection for the website
@@ -249,26 +268,9 @@ app.get('/test',async(req,res)=>{
     data={};
     if (req.session.logged){
         data.logged=true;
+    }else{
+        //res.redirect("/authen");
     }
-    data.logged=true;
-    //console.log(req)
-    // Error check
-    switch(req.status){
-        case 302:
-            break;
-        case 457:
-            data.TitleError=true;
-            break;
-        case 458:
-            data.ContentError=true;
-        case 459:
-            data.CommentError=true;
-    }
-    /*data.TitleError=req.query.TitleError;
-    data.ContentError=req.query.ContentError;
-    data.CommentError=req.query.CommentError;
-    data.CommentError_id=req.query.CommentError_id;
-    */
     const db = await openDb()
     const id = req.params.id 
     const posts = await db.all(`
@@ -277,10 +279,9 @@ app.get('/test',async(req,res)=>{
     const response = await db.all(`
     SELECT * FROM message
     `,[id])
-    const upvotes = await db.all(`
-    SELECT * FROM upvotes
+    const votes = await db.all(`
+    SELECT * FROM votes
     `,[id])
-    
 
     let posts_responses=[posts,response];
     console.log(posts_responses)
@@ -326,21 +327,30 @@ app.get('/test',async(req,res)=>{
             }
         }
     }
-    for (tmp of upvotes){
+    for (tmp of votes){
         console.log(tmp)
         if (tmp.response_id==0){
             for (post of posts){
                 if (post.id==tmp.lien_id){
-                    post.votes++;
+                    if (tmp.type){
+                        post.votes++;
+                    }else{
+                        post.votes--;
+                    }
                 }
             }
         }else{
             for (rep of response){
                 if ((rep.lien_id==tmp.lien_id) && (rep.id==tmp.response_id)){
-                    rep.votes++;
+                    if (tmp.type){
+                        rep.votes++;
+                    }else{
+                        rep.votes--;
+                    }
                 }
             }
         }
+        
     }
     //posts[0].Content="Trop bien ce site : <a href='http://www.google.fr'>Google</a>";
     //posts[1].Centent=`a href="http://www.google.fr"`
@@ -356,29 +366,12 @@ app.get('/test',async(req,res)=>{
 app.post('/add',async(req,res)=>{
     // fonction doublon de postpost, afin de ne pas tout casser avec mes tests
     const db=await openDb()
-    let status=302;                                         // found
     let username;
     let content;
     let user_id;
     let Title="New post"                                    // until I add a Title input
     let TitleError=false;
     let ContentError=false;
-
-    if (req.body.title!=undefined && req.body.title!=""){
-        Title=req.body.title;
-        
-
-    }else{
-        TitleError=true;
-        status=457;                                         // not reserved, stands for TitleError
-    }
-
-    if (req.body.post!=undefined && req.body.post!=""){
-        content=req.body.post;
-    }else{
-        ContentError=true;
-        status=458;                                         // not reserved, stands for ContentError
-    }
 
 
 
@@ -398,7 +391,6 @@ app.post('/add',async(req,res)=>{
 
         addPost(db,[Title,content,user_id,"0"])
     }
-    status=418;
     res.redirect("test");
     
 })
@@ -429,6 +421,16 @@ app.post('/comment',async(req,res)=>{
     addComment(db, [comment,user_id,post_id])
     res.redirect("test")
 })
+
+app.post("/vote",async(req,res)=>{
+    const db=await openDb();
+    const user_id=1; //temporary
+    //console.log(tables[req.body.vote_type], [req.body.msg_id, req.body.comm_id, user_id])
+    console.log([req.body.msg_id,  user_id,req.body.comm_id, req.body.vote_type])
+    await addVote(db,[req.body.msg_id,  user_id,req.body.comm_id, req.body.vote_type]);
+    console.log(req.body);    
+});
+
 
 app.listen(port,() => {
     console.log("Listening on port ", port)

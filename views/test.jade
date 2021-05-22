@@ -9,7 +9,7 @@ block body
     header
         nav(style="max-width:1580px;text-align: center")
             div.row.align-items-left.py-2
-                div.col-1
+               div.col-1
                     img(src="images/logo.png")
                 div.col.2(style="text-align:left")
                     h4.text-muted.m-0="Bluedit"
@@ -31,7 +31,7 @@ block body
  
     section
         div.container.bg-light.py-5.text-center.mb-3
-            h1: #[Recent posts] #[a(href="http://google.fr")="Google"]
+            h1="Recent posts"
         if (logged)
             div.container.bg-dark.text-light.py-3
                 div.row
@@ -57,11 +57,13 @@ block body
                         //votes
 
                     div.row
-                        div.col-9.col-lg-1.text-align-center 
+                        div.col-12.col-lg-1.text-align-center(style="width:3%;") 
                             //test to display votes
-                            p=lien.votes
+                            p(style="margin-bottom:0px;padding-left:5px;margin-top:8px;float:left;",id='votes'+lien.id+'0')=lien.votes
+                            img(style="float: left;",src="images/upvote.png", onclick='sendVote('+lien.id+',0,1)', id=lien.id+'0U')="U"
+                            img(style="float: left;",src="images/downvote.png", onclick='sendVote('+lien.id+',0,0)', id=lien.id+'0D')="D"
                            
-                        div.col-9.col-lg-7
+                        div.col-12.col-lg-11
                             // title display
                             h1=lien.Title
                     div.row
@@ -75,6 +77,7 @@ block body
                                 div.row
                                     div.col-9.col-lg-1
                                     div.col-9.col-lg-1.text-align-center
+
                                         p=message.votes
                                     div.col-9
                                         p !{message.Content} 
@@ -90,7 +93,6 @@ block body
                     
                     
         else
-            p="Désolé, on n'a rien trouvé à t'afficher"        
-        
-    script(type="text/javascript", src="public/scripts/display.js")
-       
+            p="Désolé, on n'a rien trouvé à t'afficher"
+
+    script(src="scripts/test.js")
