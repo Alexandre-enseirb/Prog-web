@@ -5,8 +5,8 @@ html
     title 无标题文档
     style.
       #container{
-      background:white;
-      color:#2289F0;
+      background:rgba(255,255,255,0.5);
+      color:#0C3BFF;
       padding:25px;
       margin:100px auto 0px;
       width:700px;
@@ -15,10 +15,12 @@ html
       box-shadow:10px 10px 15px  black  ;
       }
       hr{width:70%;
-      border:#2289F0 1px  solid  ;
+      border:#0C3BFF 1px  solid  ;
       margin-bottom:15px;
       }
-      body{background:#cccccc;}
+      body{background:#cccccc;
+      background-image:url(images/laopo.jpg);
+      }
       input{width:180px;
       height:20px;
       margin:5px;
@@ -52,7 +54,7 @@ html
           | Secret Code：
           input(type="password" name="secretcode" placeholder="secret code" required='') 
         br
-        input(type="submit" value="Envoyer les données") 
+        input(type="submit" value="Sign up!") 
         if (nopasswd)
             p="Veuillez renseigner un mot de passe"
         if (shortUsername)

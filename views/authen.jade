@@ -1,15 +1,77 @@
-html(lang="fr")
-    head
-    title="authentification"
-    body 
-        
-        if (failed)
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    title Monsite
+    style.
+      #container{
+      background:rgba(0,0,0,0.5);
+      color:#FEB61B;
+      padding:25px;
+      margin:100px auto 0px;
+      width:700px;
+      text-align:center;
+      font-family:"Arial";
+      box-shadow:10px 10px 15px  black  ;
+      }
+      hr{width:70%;
+      border:#FEB61B 1px  solid  ;
+      margin-bottom:15px;
+      }
+      body{
+          background:#17c9d0;
+          background-image:url(images/mkm.jpg);
+      }
+      input{width:180px;
+      height:30px;
+      margin:10px;
+      font-size:16px;
+      font-family:"Arial";}
+      button{width:120px;
+      height:50px;
+      background:#FEB61B;
+      border:0px;
+      color:#FEB61B;
+      margin:20px;
+      font-size:28px;
+      font-family:"Arial";
+      font-weight:bold;}
+      button:hover{background:#FEB61B;}
+  body
+    #container
+      if (failed)
             p="Une erreur a été rencontrée. Veuillez vérifier votre mail et mot de passe."
         else
             p="Bonjour."
+      
+      
+      h1 Authentification
+      hr
+
+      form(action="/signin" method="POST")
+        label
+          | E-mail  ：
+          input(type="text" name="address" placeholder="mail address" required='') 
+        br
+        label
+          | Secret Code：
+          input(type="password" name="secretcode" placeholder="secret code" required='') 
+        br
+        input(type="submit" value="log in!") 
+        if (nopasswd)
+            p="Veuillez renseigner un mot de passe"
+        if (shortUsername)
+            p="Veuillez entrer un pseudonyme de plus de 4 caractères"
+        if (nomail)
+            p="Mail invalid"
 
 
-        form(action="/signin" method="POST")
-            input(type="text" name="address" placeholder="Adresse mail")
-            input(type="password" name="secretcode" placeholder="Mot de passe") 
-            input(type="submit" value="Connexion")
+
+
+
+
+
+
+
+
+
