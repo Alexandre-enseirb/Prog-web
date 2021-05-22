@@ -1,7 +1,7 @@
 // Version rendu
 
 const {openDb} = require("./projet_db")
-const tablesNames = ["user","lien","message"]
+const tablesNames = ["user","lien","message","votes"]
 
 
 async function createusername(db){
