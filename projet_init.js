@@ -1,24 +1,31 @@
+// Version rendu
+
 const {openDb} = require("./projet_db")
 const tablesNames = ["user","lien","message"]
 
 
 async function createusername(db){
     await db.run(`
-    INSERT INTO user (username,mailaddress,secretcode,isAdmin) VALUES("Yixin","lyx990816@gmail.com","donttouch",1),
-    ("Alexandre","alexandre@gmail.com","qwerty",0);
+    INSERT INTO user (username,mailaddress,secretcode,isAdmin) VALUES("Max","Max@mail.com","Max",0),
+    ("Bob","Bob@mail.com","Bob",0);
     `)
 }
 
 async function createlink(db){
     await db.run(`
-    INSERT INTO lien (Title,Content,user_id,votes) VALUES("first article","How are you ?","1","0")
+    INSERT INTO lien (Title,Content,user_id,votes) VALUES("Magnifique site","https://www.google.fr","1","0")
     `)
 }
 
 async function createmessage(db){
   await db.run(`
-  INSERT INTO message (Content,user_id,lien_id) VALUES("I'm fine thank you ","2","1")
+  INSERT INTO message (Content,user_id,lien_id,votes) VALUES("Excellent site pour faire des recherches !","2","1","0")
   `)
+}
+
+async function createupvote(db){
+    await db.run(`
+    INSERT INTO upvotes (lien_id, response_id, user_id) VALUES (1,0,2), (1,1,1)`)
 }
 
 async function createTables(db){
@@ -51,11 +58,42 @@ async function createTables(db){
       Content varchar(200) NOT NULL,
       lien_id INT(10) NOT NULL,
       user_id INT(10) NOT NULL,
+      votes int(11) NOT NULL,
       FOREIGN KEY	(user_id) REFERENCES user (id)
-      FOREIGN KEY (user_id) REFERENCES lien (id)
+      FOREIGN KEY (lien_id) REFERENCES lien (id)
       );   
+
 `) 
-   return await Promise.all([userlist,lienlist])
+    // Pour les upvotes et les downvotes
+    // lien_id représente le post sur lequel on vote
+    // response_id représente le commentaire de l'upvote.
+    // Si le champ response_id vaut 0, le vote revient au post initial.
+    const upvotes = db.run(`
+      CREATE TABLE IF NOT EXISTS upvotes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lien_id INT(10) NOT NULL,
+        user_id INT(10) NOT NULL,
+        response_id INT(10) NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES user (id)
+        FOREIGN KEY (lien_id) REFERENCES lien (id)
+        FOREIGN KEY (response_id) REFERENCES message (id)
+        );
+`)
+
+    const downvotes = db.run(`
+      CREATE TABLE IF NOT EXISTS downvotes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lien_id INT(10) NOT NULL,
+        user_id INT(10) NOT NULL,
+        response_id INT(10) NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES user (id)
+        FOREIGN KEY (lien_id) REFERENCES lien (id)
+        FOREIGN KEY (response_id) REFERENCES message (id)
+        );
+`)
+
+   
+    return await Promise.all([userlist,lienlist])
 }
 
 async function dropTables(db){
@@ -73,4 +111,5 @@ async function dropTables(db){
     await createusername(db)
     await createlink(db)
     await createmessage(db)
+    await createupvote(db)
   })()

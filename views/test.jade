@@ -6,10 +6,45 @@ block body
 
     
     // try to define what a post will look like
-    
+    header
+        nav(style="max-width:1580px;text-align: center")
+            div.row.align-items-left.py-2
+                div.col-1
+                    img(src="images/logo.png")
+                div.col.2(style="text-align:left")
+                    h4.text-muted.m-0="Bluedit"
+                div.col.d-flex.justify-content-end
+                    
+                    
+                    ul.nav.nav-pills
+                        if (logged)
+                            if (admin)
+                                p="ARTHAAAAAAAAS"
+                            else
+                                p="It's lunatic time"
+                        else
+                            li.nav-item
+                                a.nav-link.active(href="http://localhost:3000/authen")="Log in"
+                            li.nav-item
+                                a.nav-link.active(href="http://localhost:3000/inscription")="Sign up"
+
+ 
     section
         div.container.bg-light.py-5.text-center.mb-3
-            h1="Recent posts"
+            h1: #[Recent posts] #[a(href="http://google.fr")="Google"]
+        if (logged)
+            div.container.bg-dark.text-light.py-3
+                div.row
+                    div.col-9.col-lg-9.text-align-center
+                        if (TitleError)
+                            p="Erreur, titre invalide."
+                        if (ContentError)
+                            p="Erreur, contenu du post invalide."
+                        form(action="/add",method="POST")
+                            input(type="hidden",name="title",id="post_title",placeholder="Titre")
+                            input(type="text", onclick="const title=document.getElementById('post_title'); title.type='text';", name="post",id="post_content",placeholder="Quoi de neuf ?")
+                            input(type="submit" value="Envoyer")
+
         if (posts)
             each lien in posts
                 div.container.bg-dark.text-light.py-3
@@ -28,47 +63,34 @@ block body
                            
                         div.col-9.col-lg-7
                             // title display
-                            h1="Title "+lien.Title
+                            h1=lien.Title
                     div.row
                         // for content
                         div.col-9.col-lg-1
                         div.col-9
-                            p="Content :"+lien.Content
+                            p !{lien.Content}
                     if (response)
                         each message in response
                             if (message.lien_id == lien.id)
                                 div.row
-                                    div.col-9.col-lg-2
+                                    div.col-9.col-lg-1
+                                    div.col-9.col-lg-1.text-align-center
+                                        p=message.votes
                                     div.col-9
-                                        p="Comment : "+message.Content 
+                                        p !{message.Content} 
                         
-                            
+                        div.row
+                            div.col-9.col-lg-9
+                                if (CommentError && CommentError_id==lien.id)
+                                    p="Erreur, commentaire invalide"
+                                form(action="/comment",method="POST")
+                                    input(type="text",name="comment",placeholder="Répondre...")
+                                    input(type="hidden",name="post_id",value=lien.id)
+                                    input(type="submit" value="Envoyer")    
                     
                     
         else
             p="Désolé, on n'a rien trouvé à t'afficher"        
-div.container
-            
-        // section has two paddings and a main column.
         
-
-    if (posts)    
-        each lien in posts 
-            p="bonjour " + lien.Content
-            p= "       this is content :   " + lien.Content
-            each message in response 
-                if (message.lien_id == lien.id)
-                    p="   this is response :  " + message.Content
-            form(action="/response" method="POST")
-                input(type="text" name="res_content" placeholder="response..")
-                input(type="text" name="res_userid" placeholder="userid")
-                input(type="text" name="res_lienid" placeholder="lienid")
-                input(type="submit" value="Envoyer les données")
-
-        p="create a new post here"
-        form(action="/postpost" method="POST")
-            input(type="text" name="title" placeholder="title")
-            input(type="text" name="content" placeholder="content")
-            input(type="text" name="userid" placeholder="Id") 
-            input(type="submit" value="Envoyer les données")
-
+    script(type="text/javascript", src="public/scripts/display.js")
+       
