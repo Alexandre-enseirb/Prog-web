@@ -23,7 +23,7 @@ const sess={
     admin: false,
     username: undefined,
     logged: false,
-    user_id: undefined,
+    user_id: 1, // THIS IS PURELY TEMPORARY. MUST BE EDITED BEFORE PUSH
     cookie: {
         maxAge: 10000*3600
     },
@@ -37,6 +37,7 @@ if (hasSQLite){
 // app setup
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+app.use(bodyParser.json());
 app.use(express.static("public")); // not mine, for image display
 app.use(session(sess))
 app.set('views', './views'); //les views sont dans le dossier views
@@ -58,6 +59,24 @@ async function addComment(db, comment){
     const insertRequest = await db.prepare("INSERT INTO message (Content, user_id, lien_id,votes) VALUES (?,?,?,0)")
     return await insertRequest.run(comment)
 }
+/*
+async function addVote(db, Vote_type, Vote){
+    if (Vote_type){
+        // 1 is for upvote
+        const insertRequest = await db.prepare("INSERT INTO upvotes (lien_id, response_id, user_id) VALUES (?,?,?)")
+    }
+    else
+    {
+        const insertRequest = await db.prepare("INSERT INTO downvotes (lien_id, response_id, user_id) VALUES (?,?,?)")
+    }
+    return await insertRequest.run(Vote)
+}*/
+
+async function addVote(db, Vote){
+    const insertRequest = await db.prepare("INSERT INTO votes (lien_id, user_id, response_id, type) VALUES (?,?,?,?)")
+    return await insertRequest.run(Vote)
+}
+
 
 app.get("/",(req,res)=>{
     // main redirection for the website
@@ -284,26 +303,11 @@ app.get('/test',async(req,res)=>{
     data={};
     if (req.session.logged){
         data.logged=true;
+    }else{
+        //res.redirect("/authen");
     }
-    data.logged=true;
-    //console.log(req)
-    // Error check
-    switch(req.status){
-        case 302:
-            break;
-        case 457:
-            data.TitleError=true;
-            break;
-        case 458:
-            data.ContentError=true;
-        case 459:
-            data.CommentError=true;
-    }
-    /*data.TitleError=req.query.TitleError;
-    data.ContentError=req.query.ContentError;
-    data.CommentError=req.query.CommentError;
-    data.CommentError_id=req.query.CommentError_id;
-    */
+    const user_id=1
+    
     const db = await openDb()
     const id = req.params.id 
     const posts = await db.all(`
@@ -312,10 +316,11 @@ app.get('/test',async(req,res)=>{
     const response = await db.all(`
     SELECT * FROM message
     `,[id])
-    const upvotes = await db.all(`
-    SELECT * FROM upvotes
+    const votes = await db.all(`
+    SELECT * FROM votes
     `,[id])
-    
+    const user_votes = await db.all(`
+    SELECT * FROM votes WHERE user_id=?`,user_id);
 
     let posts_responses=[posts,response];
     console.log(posts_responses)
@@ -324,7 +329,7 @@ app.get('/test',async(req,res)=>{
     let URL="";
     let CompleteURL="";
     let changed;
-    for (type of posts_responses){                         // we check for url in every post
+    for (type of posts_responses){                   // we check for url in every post
         for (post of type){
             
             console.log(post)
@@ -361,59 +366,65 @@ app.get('/test',async(req,res)=>{
             }
         }
     }
-    for (tmp of upvotes){
-        console.log(tmp)
-        if (tmp.response_id==0){
-            for (post of posts){
-                if (post.id==tmp.lien_id){
-                    post.votes++;
+    
+    // VOTES PROCESSING
+    /*for (tmp of votes){                              // iterates through the votes
+        if (tmp.response_id==0){                     // if it's an original link
+            for (post of posts){                     // iterates through links
+                if (post.id==tmp.lien_id){           // if the vote corresponds
+                    if (tmp.type){                   
+                        post.votes++;                // add 1 if upvote
+                    }else{
+                        post.votes--;                // substract 1 if downvote
+                    }
                 }
             }
-        }else{
-            for (rep of response){
+        }else{                                      
+            for (rep of response){                   // iterate through comments
                 if ((rep.lien_id==tmp.lien_id) && (rep.id==tmp.response_id)){
-                    rep.votes++;
+                    if (tmp.type){
+                        rep.votes++;                 // add 1 if upvote
+                    }else{
+                        rep.votes--;                 // substract 1 if downvote
+                    }
+                }
+            }
+        }
+        
+    }*/
+
+    // VOTES DISPLAY FOR USER
+    for (const user_vote of user_votes){             // iterates through the user's votes
+        if (user_vote.response_id){
+            // TODO
+        }else{
+            for (const post of posts){
+                if (user_vote.lien_id == post.id){
+                    if (user_vote.type){
+                        post.upvoted=true;
+            
+                    }else{
+                        post.downvoted=true;
+            
+                    }
                 }
             }
         }
     }
-    //posts[0].Content="Trop bien ce site : <a href='http://www.google.fr'>Google</a>";
-    //posts[1].Centent=`a href="http://www.google.fr"`
-    //posts[2].Content="a href='http://www.google.fr' text='Google'"
-    //posts[3].Content="a href='http://www.google.fr/'> Google"
     data.posts = posts
     data.response = response
-    console.log(response)
-    //console.log(data)
     res.render("test",data)
 })
 
 app.post('/add',async(req,res)=>{
     // fonction doublon de postpost, afin de ne pas tout casser avec mes tests
     const db=await openDb()
-    let status=302;                                         // found
     let username;
     let content;
     let user_id;
     let Title="New post"                                    // until I add a Title input
     let TitleError=false;
     let ContentError=false;
-
-    if (req.body.title!=undefined && req.body.title!=""){
-        Title=req.body.title;
-        
-
-    }else{
-        TitleError=true;
-        status=457;                                         // not reserved, stands for TitleError
-    }
-
-    if (req.body.post!=undefined && req.body.post!=""){
-        content=req.body.post;
-    }else{
-        ContentError=true;
-        status=458;                                         // not reserved, stands for ContentError
-    }
 
 
 
@@ -433,7 +444,6 @@ app.post('/add',async(req,res)=>{
 
         addPost(db,[Title,content,user_id,"0"])
     }
-    status=418;
     res.redirect("test");
     
 })
@@ -466,6 +476,132 @@ app.post('/comment',async(req,res)=>{
 })
 
 
+app.post("/vote",async(req,res)=>{
+    /*
+     * This post serves two purposes
+     *
+     * First, it checks if a given user has already upvoted/downvoted a link/comment
+     *  if a vote already exists for the given link/comment, it is updated
+     *  else, we create a new vote for this link/comment, stored in votes, linked to user_id
+     *
+     * Then, it gets the link/comment, extracts their votes count, and adds/substracts 1 or 2
+     *
+     * The only case where two votes have to be counted is if we go from an upvote to a downvote
+     *  or the other way
+     *
+     */
+
+    const db=await openDb();
+    let user_id=req.session.user_id; //temporary
+    let previous_vote=undefined;
+    let current_vote=req.body.vote_type;
+    user_id=1; // [DEBUG] 
+    
+    // check if the user exists
+    if (user_id==undefined){
+        console.log("ERREUR ! Un utilisateur non connecté a tenté de voter.");
+        return;
+    } 
+    
+    // Query for vote
+    const Votes= await db.get(`SELECT * FROM votes WHERE lien_id=? and response_id=? and user_id=?`,[req.body.msg_id,req.body.comm_id, user_id]);
+
+    console.log(Votes)
+    
+    if (Votes){
+        // user already votedi
+        previous_vote=Votes.type;
+        const updateRequest= await db.prepare("UPDATE votes SET type=? WHERE id=?")
+        await updateRequest.run([req.body.vote_type, Votes.id])
+        console.log("updated vote")
+        
+    }else{
+
+        // user didn't vote
+        await addVote(db,[req.body.msg_id,  user_id,req.body.comm_id, req.body.vote_type]);
+        console.log("created new vote")
+    }
+
+    // updating the link/comment's vote count
+
+    if (req.body.comm_id){
+        // we're looking for a comment
+        const comment=await db.get(`SELECT * FROM message WHERE id=?`,[req.body.comm_id]);
+        
+        if (current_vote){                           // we're upvoting
+            if (previous_vote!=undefined){           // we were downvoting
+                // if vote cancel : change 1. Else, change 2.
+                comment.votes+=(req.body.cancel ? 1:2);
+            }else{                                   // we just upvoted first time
+                comment.votes+=1;
+            } 
+        }else{                                       // we're downvoting
+            if (previous_vote){                      // we were upvoting
+                comment.votes-=(req.body.cancel ? 1:2);
+            }else{
+                comment.votes-=1;
+            }
+        }
+        const updateComment=await db.prepare("UPDATE message SET votes=? WHERE id=?")
+        await updateComment.run([comment.votes, req.body.comm_id])
+    }else{                                           // means comm_id is 0 : we're a link
+        const link=await db.get(`SELECT * FROM lien WHERE id=?`,[req.body.msg_id]);
+        console.log(current_vote, previous_vote, link.votes);
+        if (current_vote){                           // we're upvoting
+            if (previous_vote!=undefined){           // we were downvoting
+                // if vote cancel : change 1. Else, change 2.
+                link.votes+=(req.body.cancel ? 1:2);
+            }else{                                   // we just upvoted first time
+                link.votes+=1;
+            } 
+        }else{                                       // we're downvoting
+            if (previous_vote){                      // we were upvoting
+                link.votes-=(req.body.cancel ? 1:2);
+            }else{
+                link.votes-=1;
+            }
+        }
+        const updateLink = await db.prepare("UPDATE lien SET votes=? WHERE id=?")
+        await updateLink.run([link.votes, req.body.msg_id])
+    }
+    
+
+
+        
+
+
+
+    //console.log(tables[req.body.vote_type], [req.body.msg_id, req.body.comm_id, user_id])
+    //console.log([req.body.msg_id,  user_id,req.body.comm_id, req.body.vote_type])
+    //    console.log(req.body);    
+});
+
+app.get("/post/:id",async(req,res)=>{
+    const db=await openDb();
+    const post=db.get(`SELECT * FROM lien WHERE id=?`,[req.query.id]);
+    let votes_amount=0;
+
+
+    // beforehand, we check if the post does exist
+    if (post==undefined){
+        status=404; // not found
+        res.redirect("/test",status); // back to mainpage
+    }
+
+    // now we can process and render
+    
+    
+
+    const user_vote=db.get(`SELECT * FROM votes WHERE lien_id=? and user_id=?`,[req.query.id,req.session.user_id]);
+    if (user_vote.type){
+        post.upvoted=true;
+    }else{
+        post.downvoted=true;
+    }
+
+    data.lien=post;
+    res.render("post",data);
+})
 
 app.listen(port,() => {
     console.log("Listening on port ", port)

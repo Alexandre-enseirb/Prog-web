@@ -1,96 +1,68 @@
 extends layout
 block body
-    // a page to edit anytime we want to make some tests without breaking the rest of the website.
-    // refered to as localhost:3000/test
-    // no direct link should be refering it, and no redirections to it should exist.
-
-    
-    // try to define what a post will look like
     header
-        nav(style="max-width:1580px;text-align: center")
+        nav(style="max-width:1580px,text-align:center")
             div.row.align-items-left.py-2
                 div.col-1
                     img(src="images/logo.png")
                 div.col.2(style="text-align:left")
                     h4.text-muted.m-0="Bluedit"
                 div.col.d-flex.justify-content-end
-                    
-                    
+
                     ul.nav.nav-pills
                         if (logged)
-                            if (admin)
-                                p="ARTHAAAAAAAAS"
+                            if (admin) 
+                                p="Miko"
                             else
-                                p="It's lunatic time"
+                                p="It's Lunatic Tiiiiiiime"
                         else
                             li.nav-item
                                 a.nav-link.active(href="http://localhost:3000/authen")="Log in"
                             li.nav-item
-                                a.nav-link.active(href="http://localhost:3000/inscription")="Sign up"
+                                a.nav-link.active(href="http//localhost:3000/inscription")="Sign up"
 
- 
     section
         div.container.bg-light.py-5.text-center.mb-3
-            h1: #[Recent posts] #[a(href="http://google.fr")="Google"]
+            h1="Recent posts"
         if (logged)
             div.container.bg-dark.text-light.py-3
                 div.row
                     div.col-9.col-lg-9.text-align-center
                         if (TitleError)
-                            p="Erreur, titre invalide."
+                            p="Title error"
                         if (ContentError)
-                            p="Erreur, contenu du post invalide."
+                            p="Content error"
                         form(action="/add",method="POST")
                             input(type="hidden",name="title",id="post_title",placeholder="Titre")
-                            input(type="text", onclick="const title=document.getElementById('post_title'); title.type='text';", name="post",id="post_content",placeholder="Quoi de neuf ?")
+                            input(type="text",onclick="const title=document.getElementById('post_title');title.type='text';" name="post", id="post_content",placeholder="Quoi de neuf ?")
                             input(type="submit" value="Envoyer")
-
         if (posts)
             each lien in posts
-                div.container.bg-dark.text-light.py-3
-                    // each post is one row
-                    //lien
-                        //id
-                        //Title
-                        //Content
-                        //user_id references user.id
-                        //votes
-
-                    div.row
-                        div.col-9.col-lg-1.text-align-center 
-                            //test to display votes
-                            p=lien.votes
-                           
-                        div.col-9.col-lg-7
-                            // title display
-                            h1=lien.Title
-                    div.row
-                        // for content
-                        div.col-9.col-lg-1
-                        div.col-9
-                            p !{lien.Content}
-                    if (response)
-                        each message in response
-                            if (message.lien_id == lien.id)
-                                div.row
-                                    div.col-9.col-lg-1
-                                    div.col-9.col-lg-1.text-align-center
-                                        p=message.votes
-                                    div.col-9
-                                        p !{message.Content} 
+                div.container.bg-dark.text-light.py-3(style="border-radius:4px;")
+                    
+                    div(style="width:40px")
+                        p(style="margin-bottom:0px;padding-left:5px;margin-top:6px;float:left", id="votes"+lien.id+"0")=lien.votes
+                        if(lien.upvoted)
+                            img(style="float: left;",src="images/upvote_2.png", onclick='sendVote('+lien.id+',0,0,1)', id=lien.id+'0U', alt="D")="D" 
+                        else
+                            img(style="float: left;",src="images/upvote.png", onclick='sendVote('+lien.id+',0,1,1)', id=lien.id+'0U', alt="U")="U"
                         
+                        
+                        if (lien.downvoted)
+                            img(style="float: left;",src="images/downvote_2.png", onclick='sendVote('+lien.id+',0,1,0)', id=lien.id+'0D', alt="U")="U"
+ 
+                        else
+                            img(style="float: left;",src="images/downvote.png", onclick='sendVote('+lien.id+',0,0,0)', id=lien.id+'0D', alt="D")="D"
+                    div(style="width:auto;padding-left:60px;background-color='#222222';")
                         div.row
-                            div.col-9.col-lg-9
-                                if (CommentError && CommentError_id==lien.id)
-                                    p="Erreur, commentaire invalide"
-                                form(action="/comment",method="POST")
-                                    input(type="text",name="comment",placeholder="Répondre...")
-                                    input(type="hidden",name="post_id",value=lien.id)
-                                    input(type="submit" value="Envoyer")    
+                            p(style="font-size:10pt;margin-bottom:0px;")="posté par user il y a temps"
+                        div.row
+                            p(style="font-size:14pt;")=lien.Title
+                        div.row
+                            !{lien.Content}
                     
-                    
-        else
-            p="Désolé, on n'a rien trouvé à t'afficher"        
-        
-    script(type="text/javascript", src="public/scripts/display.js")
-       
+
+
+
+
+    script(type="text/javascript" src="scripts/test.js") 
