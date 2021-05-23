@@ -4,17 +4,16 @@ block body
         nav(style="max-width:1580px,text-align:center")
             div.row.align-items-left.py-2
                 div.col-1
-                    img(src="images/logo.png")
+                    img(src="../images/logo.png" style="padding-left:10px;")
                 div.col.2(style="text-align:left")
-                    h4.text-muted.m-0="Bluedit"
+                    h4(style="padding-top:8px;").text-muted.m-0="Bluedit"
                 div.col.d-flex.justify-content-end
 
                     ul.nav.nav-pills
                         if (logged)
-                            if (admin) 
-                                p="Miko"
-                            else
-                                p="It's Lunatic Tiiiiiiime"
+                            p(style="padding-top:8px;padding-right:8px;")="Welcome back "+username
+                            li(style="padding-right:5px;").nav-item 
+                                a.nav-link.active( href="http://localhost:3000/profile/"+user_id)="Profile"
                         else
                             li.nav-item
                                 a.nav-link.active(href="http://localhost:3000/authen")="Log in"
@@ -55,9 +54,9 @@ block body
                             img(style="float: left;",src="images/downvote.png", onclick='sendVote('+lien.id+',0,0,0)', id=lien.id+'0D', alt="D")="D"
                     div(style="width:auto;padding-left:60px;background-color='#222222';")
                         div.row
-                            p(style="font-size:10pt;margin-bottom:0px;")="posté par user il y a temps"
+                            p(style="font-size:10pt;margin-bottom:0px;")="posté par "+lien.authorName
                         div.row
-                            p(style="font-size:14pt;")=lien.Title
+                            !{lien.Title}
                         div.row
                             !{lien.Content}
                     

@@ -9,7 +9,7 @@ try{
     const SQLiteStore = require('connect-sqlite3')(session);
     hasSQLite=true;
 }catch(e){
-    //console.log("connect-sqlite3 wasn't found. Aborting.")
+    ////console.log("connect-sqlite3 wasn't found. Aborting.")
 }
 const {openDb} = require("./projet_db")
 
@@ -72,21 +72,21 @@ function isIterable(obj){
 }
 
 function URLify(posts_responses){
-    //console.log("-------------")
-    //console.log(posts_responses)
-    //console.log("-----------")
+    ////console.log("-------------")
+    ////console.log(posts_responses)
+    ////console.log("-----------")
     let tmp=0;
     let URL="";
     let keys;
     let changed;
-    //console.log(posts_responses);
+    ////console.log(posts_responses);
     for (type of posts_responses){                   // we check for url in every post
         if (!isIterable(type)){
             type=[type];
         }
         for (post of type){
             if (post){
-                //console.log(post)
+                ////console.log(post)
                 content=post.Content;                    // therefore we check the content
                 words=content.split(" ");                // we split it per word
                 for (const word of words){               // for every word of our content
@@ -118,7 +118,7 @@ function URLify(posts_responses){
                 for (let i=0;i<words.length;i++){
                     post.Content=post.Content.concat(' ',words[i]);
                 }
-                //console.log(post.Content)
+                ////console.log(post.Content)
             }
         }
     }
@@ -163,7 +163,7 @@ app.get('/inscription',async(req, res) =>{
     const users = await db.all(`
     SELECT * FROM user
     `,[id])
-    //console.log(users)
+    ////console.log(users)
     data.user=users;
     res.render("inscription",data)
 })
@@ -183,7 +183,7 @@ app.post('/inscriptionadd',async(req,res)=>{
             
             if(secretInBody){ // verify passwd has been entered
                 req.params.secretcode = secretInBody;
-                ////console.log(req.body.username.length)
+                //////console.log(req.body.username.length)
                 req.session.name=nameInBody;
                 const db = await openDb()
                 const id = req.params.id
@@ -201,7 +201,7 @@ app.post('/inscriptionadd',async(req,res)=>{
             }
             else{ 
                 //res.render("username4")
-                //console.log("pls enter secret code")
+                ////console.log("pls enter secret code")
                 res.redirect("/home")
             }
         
@@ -210,46 +210,19 @@ app.post('/inscriptionadd',async(req,res)=>{
        //res.redirect("/inscription")
         else{
         //res.render("addressmailfaute")
-        //console.log("pls enter email correct")
+        ////console.log("pls enter email correct")
         res.redirect("/inscription")
         }
     }
     else{
     //res.render("username4")
-    //console.log("user name must have 4")
+    ////console.log("user name must have 4")
     res.redirect("/inscription")
     }
 })
 
-app.post('/postpost',async(req,res)=>{
-  const contentinbody = req.body.content
-  const titleinbody = req.body.title
-  const useridinbody = req.body.userid
-  const db = await openDb()
-  req.params.content = contentinbody;
-  req.params.title = titleinbody;
-  req.params.userid = useridinbody
-  await db.run(`
-        INSERT INTO lien (Title,Content,user_id,votes) VALUES(?,?,?,0)
-    `,req.params.content,req.params.title,req.params.userid)
-  
-    res.redirect("/home")  // how to use userid? 
-})
 
-app.post('/response',async(req,res)=>{
-    const contentinbody = req.body.res_content
-    const useridinbody = req.body.res_userid
-    const lienidinbody = req.body.res_lienid
-    const db = await openDb()
-    req.params.content = contentinbody;
-    req.params.userid = useridinbody;
-    req.params.lienid = lienidinbody;
-    await db.run(`
-        INSERT INTO message(Content,user_id,lien_id) VALUES(?,?,?)
-    `,req.params.content,req.params.userid,req.params.lienid)
 
-    res.redirect("/home")
-})
 
 app.get('/authen',async(req,res)=>{
 
@@ -269,21 +242,21 @@ app.post('/signin',async(req,res)=>{
     SELECT * FROM user
     where mailaddress=?
     `,[addressInBody])                                                              // request for user
-    //console.log('this is result')
-    console.log(result)
+    ////console.log('this is result')
+    //console.log(result)
 
     let secret_verifi = await db.all(`
         SELECT * FROM user
         where secretcode=?
     `,[secretInBody])                                                               // request for password
-    //console.log('this is seccret')
-    //console.log(secret_verifi)
+    ////console.log('this is seccret')
+    ////console.log(secret_verifi)
     
     if(result != ""&& secret_verifi != ""&& result[0].id==secret_verifi[0].id)      // correct user
     {
         req.session.logged=true;
         req.session.user = result[0].id
-        console.log(req.session)
+        //console.log(req.session)
         res.redirect("/home")                                                       // login succesful
     }
     else{
@@ -297,7 +270,7 @@ app.post('/signin',async(req,res)=>{
 
 app.get('/home',async(req, res) =>{
     data={};
-    console.log(req.session)
+    //console.log(req.session)
     if (req.session.logged){
         data.logged=true;
     }
@@ -306,15 +279,12 @@ app.get('/home',async(req, res) =>{
         return;
     }
     const user_id = req.session.user
-    //console.log(user_id)
+    ////console.log(user_id)
     const db = await openDb()
     const id = req.params.id 
-    //console.log("id is ",id)
+    ////console.log("id is ",id)
     const posts = await db.all(`
     SELECT * FROM lien
-    `)
-    const response = await db.all(`
-    SELECT * FROM message
     `)
     const votes = await db.all(`
     SELECT * FROM votes
@@ -322,16 +292,32 @@ app.get('/home',async(req, res) =>{
     const user_votes = await db.all(`
     SELECT * FROM votes WHERE user_id=?`,user_id);
 
+    //console.log(posts)
 
-    let posts_responses=[posts,response];
-    //console.log(posts_responses)
+    
+    //////console.log(posts_responses)
     let content;
     let tmp=0;
     let URL="";
     let CompleteURL="";
     let changed;
     
-    URLify(posts_responses) 
+    URLify(posts)
+    let author;
+    if (posts){
+        try{
+            for (const P of posts){
+                author=await db.get(`SELECT * FROM user WHERE id=?`,[P.user_id]);
+                titleRaw=P.Title
+                P.Title="<a style='color: white; font-size:14pt;padding-bottom:10px;', href='http://localhost:3000/post/"+P.id+"'>"+titleRaw+"</a>";
+                P.authorName=author.username;
+            }
+        }catch(TypeError){
+            author=await db.get(`SELECT * FROM user WHERE id=?`,[posts.user_id]);
+            posts.authorName=author.username;
+        }   
+    }
+    
     
 
     // VOTES DISPLAY FOR USER
@@ -352,20 +338,25 @@ app.get('/home',async(req, res) =>{
             }
         }
     }
+
+
+
+    const user_profile=await db.get(`SELECT * FROM user WHERE id=?`,[req.session.user]);
+    data.username=user_profile.username;
     data.posts = posts
-    data.response = response
+    data.user_id=req.session.user;
     res.render("home",data)
 })
 
 app.get('/profile/:id',async(req,res)=>{
     const db = await openDb()
     const id= req.params
-    //console.log("id is")
+    ////console.log("id is")
     
     const ourusers = await db.all(`
     SELECT * FROM user
     `)
-    //console.log(id)
+    ////console.log(id)
     if(req.params.id)
     {
         const youruserid = req.params.id ? req.params.id : ""
@@ -406,71 +397,16 @@ app.get('/WIP',(req,res)=>{
 
 
 
-app.get('/test',async(req,res)=>{
-    // a page to edit anytime we want to make some tests without breaking the rest
-    data={};
-    if (req.session.logged){
-        data.logged=true;
-    }else{
-        //res.redirect("/authen");
-    }
-    const user_id=1
-    
-    const db = await openDb()
-    const id = req.params.id 
-    const posts = await db.all(`
-    SELECT * FROM lien
-    `,[id])
-    const response = await db.all(`
-    SELECT * FROM message
-    `,[id])
-    const votes = await db.all(`
-    SELECT * FROM votes
-    `,[id])
-    const user_votes = await db.all(`
-    SELECT * FROM votes WHERE user_id=?`,user_id);
 
-    let posts_responses=[posts,response];
-    //console.log(posts_responses)
-    let content;
-    let tmp=0;
-    let URL="";
-    let CompleteURL="";
-    let changed;
-    
-    URLify(posts_responses) 
-    
-
-    // VOTES DISPLAY FOR USER
-    for (const user_vote of user_votes){             // iterates through the user's votes
-        if (user_vote.response_id){
-            // TODO
-        }else{
-            for (const post of posts){
-                if (user_vote.lien_id == post.id){
-                    if (user_vote.type){
-                        post.upvoted=true;
-            
-                    }else{
-                        post.downvoted=true;
-            
-                    }
-                }
-            }
-        }
-    }
-    data.posts = posts
-    data.response = response
-    res.render("test",data)
-})
 
 app.post('/add',async(req,res)=>{
-    // fonction doublon de postpost, afin de ne pas tout casser avec mes tests
+    
     const db=await openDb()
     let username;
     let content;
+    let Title;
     let user_id;
-    let Title="New post"                                    // until I add a Title input
+    
     let TitleError=false;
     let ContentError=false;
 
@@ -478,26 +414,24 @@ app.post('/add',async(req,res)=>{
 
     if (req.session.user!=undefined){
         user_id=req.session.user;
-    }else{
-        user_id=2; // temporary solution
-    }
-    //console.log(req.query);
-    content=req.body.post;
-    //await db.run(`
-    //INSERT INTO lien (Title, Content, user_id, votes) VALUES (`+Title+`,`+content+`,`+user_id+`,`+"0"+`)`)
     
+    
+    content=req.body.post;
+    Title=req.body.title;
+    
+    }
     if (TitleError || ContentError){
         //pass
     }else{
 
         addPost(db,[Title,content,user_id,"0"])
     }
-    res.redirect("test");
+    res.redirect("home");
     
 })
 
 app.post('/comment',async(req,res)=>{
-    // encore une fois, fonction doublon, je ferai un big merge quand tout fonctionnera impeccablement
+    
     const db=await openDb()
     let username;
     let comment;
@@ -514,13 +448,15 @@ app.post('/comment',async(req,res)=>{
     
     if (req.session.user!=undefined){
         user_id=req.session.user
-    }else{
-        user_id=2;
     }
+
+    
+
     Comment.user_id=user_id;
-    //console.log(Comment);
-    addComment(db, [comment,user_id,post_id])
-    res.redirect("test")
+    
+    const insertRequest = await db.prepare("INSERT INTO message (Content, user_id, lien_id,votes) VALUES (?,?,?,0)")
+    await insertRequest.run([Comment.content, Comment.user_id, Comment.post_id])
+    res.redirect("post/"+post_id.toString())
 })
 
 
@@ -539,35 +475,39 @@ app.post("/vote",async(req,res)=>{
      *
      */
 
+    console.log("vote called")
     const db=await openDb();
-    let user_id=req.session.user; //temporary
+    let user_id=req.session.user; 
     let previous_vote=undefined;
     let current_vote=req.body.vote_type;
-    user_id=1; // [DEBUG] 
+    console.log(await db.all(`SELECT * FROM votes`))
+    console.log(user_id, current_vote, req.body.msg_id, req.body.comm_id)
+
+
     
     // check if the user exists
     if (user_id==undefined){
-        //console.log("ERREUR ! Un utilisateur non connecté a tenté de voter.");
+        console.log("ERREUR ! Un utilisateur non connecté a tenté de voter.");
         return;
     } 
     
     // Query for vote
     const Votes= await db.get(`SELECT * FROM votes WHERE lien_id=? and response_id=? and user_id=?`,[req.body.msg_id,req.body.comm_id, user_id]);
 
-    //console.log(Votes)
+    
     
     if (Votes){
         // user already votedi
         previous_vote=Votes.type;
         const updateRequest= await db.prepare("UPDATE votes SET type=? WHERE id=?")
         await updateRequest.run([req.body.vote_type, Votes.id])
-        //console.log("updated vote")
+        
         
     }else{
 
         // user didn't vote
         await addVote(db,[req.body.msg_id,  user_id,req.body.comm_id, req.body.vote_type]);
-        //console.log("created new vote")
+       
     }
 
     // updating the link/comment's vote count
@@ -594,7 +534,7 @@ app.post("/vote",async(req,res)=>{
         await updateComment.run([comment.votes, req.body.comm_id])
     }else{                                           // means comm_id is 0 : we're a link
         const link=await db.get(`SELECT * FROM lien WHERE id=?`,[req.body.msg_id]);
-        //console.log(current_vote, previous_vote, link.votes);
+       
         if (current_vote){                           // we're upvoting
             if (previous_vote!=undefined){           // we were downvoting
                 // if vote cancel : change 1. Else, change 2.
@@ -619,25 +559,23 @@ app.post("/vote",async(req,res)=>{
 
 
 
-    ////console.log(tables[req.body.vote_type], [req.body.msg_id, req.body.comm_id, user_id])
-    ////console.log([req.body.msg_id,  user_id,req.body.comm_id, req.body.vote_type])
-    //    //console.log(req.body);    
+   
 });
 
 app.get("/post",async(req,res)=>{
-    res.redirect("/post/1"); //TEMPORARY REDIRECTION
+    res.redirect("http://localhost:3000/home"); // REDIRECTION
 });
 
 app.get("/post/:id",async(req,res)=>{
     const db=await openDb();
     const post=await db.get(`SELECT * FROM lien WHERE id=?`,[req.params.id]);
-    const responses=await db.get(`SELECT * FROM message WHERE lien_id=?`,[req.params.id]);
+    const responses=await db.all(`SELECT * FROM message WHERE lien_id=?`,[req.params.id]);
     const user_id=req.session.user;
 
     // beforehand, we check if the post does exist
     if (post==undefined){
         status=404; // not found
-        res.redirect(status,"/test"); // back to mainpage
+        res.redirect(status,"http://localhost:3000/home"); // back to mainpage
     }
 
     // now we can process and render
@@ -645,7 +583,7 @@ app.get("/post/:id",async(req,res)=>{
     URLify(post_responses);
     let data={}
     
-    const user_vote=await db.get(`SELECT * FROM votes WHERE lien_id=? and response_id=0 and user_id=?`,[req.params.id,1]);
+    const user_vote=await db.get(`SELECT * FROM votes WHERE lien_id=? and response_id=0 and user_id=?`,[req.params.id,user_id]);
     
     if (user_vote==undefined){ // never voted
         //pass
@@ -656,45 +594,48 @@ app.get("/post/:id",async(req,res)=>{
             post.downvoted=true;
         }
     }
-    let non_iterable=false;
-    const comment_votes=await db.all(`SELECT * FROM votes WHERE lien_id=? and user_id=?`,[req.params.id,user_id]);
-    for (const c of comment_votes){
-        if (typeof(c) === "Object"){
-            non_iterable=false;
-            break;
-        }else{
-            non_iterable=true;
+    let comment_votes;
+    for (const resp of responses){
+        comment_votes=await db.get(`SELECT * FROM votes WHERE user_id=? and lien_id=? and response_id=?`,[user_id,req.params.id,resp.id])
+        
+        if (comment_votes!=undefined){
+            if (comment_votes.type){
+                resp.upvoted=true;
+            }else{
+                resp.downvoted=true;
+            }
+            
         }
     }
     
+    
+
+    
     // looking for names
     const author=await db.get(`SELECT * FROM user WHERE id=?`,[post.user_id]);
-    //console.log(author);
+    ////console.log(author);
     post.authorName=author.username;
     let msgauthor;
-    //console.log("------------------------------");
-    if (responses){
-        try{
-            for (const R of responses){
-                msgauthor=await db.get(`SELECT * FROM user WHERE id=?`,[R.user_id]);
-                R.authorName=msgauthor.username;
-            }
-        }catch(TypeError){
-            msgauthor=await db.get(`SELECT * FROM user WHERE id=?`,[responses.user_id]);
-            responses.authorName=msgauthor.username;
-        }   
-    }
     
+    for (const msg of responses){
+        msgauthor=await db.get(`SELECT * FROM user WHERE id=?`,[msg.user_id]);
+        msg.authorName=msgauthor.username;
+    }
     
 
     data.lien=post;
     if (responses){
         data.msg=responses;
-        data.msg.non_iterable=non_iterable
+        
+        
     }
-    
+
     data.user_id=req.session.user;
-    //console.log(data.user_id)
+    data.logged=req.session.logged;
+    const user_profile=await db.get(`SELECT * FROM user WHERE id=?`,[req.session.user]);
+    data.username=user_profile.username;
+    
+    ////console.log(data.user_id)
     //console.log(data)
     res.render("post",data);
 })
@@ -707,24 +648,27 @@ app.post("/delete",async(req,res)=>{
      *  i.e. it was send by the right user
      *
      */
+    console.log("delete called")
     const db = await openDb();
     const lien_id=req.body.lien_id;
     const msg_id=req.body.msg_id;
     const user_id=req.body.user_id;
+    console.log(lien_id,msg_id,user_id)
     
     if (msg_id){
         // we're deleting a comment
+        console.log(await db.all(`SELECT * FROM message`))
         await db.run("DELETE FROM message WHERE lien_id=? and id=? and user_id=?",[lien_id,msg_id,user_id])
-        
+        console.log("deleted msg")
     }else{
         // we delete a post (and all the comments that come with it
         await db.run("DELETE FROM lien WHERE id=? and user_id=?",[lien_id, user_id]);
-        await db.all("DELETE FROM message WHERE lien_id=? and id=? and user_id=?",[lien_id,msg_id,user_id]);
+        await db.run("DELETE FROM message WHERE lien_id=? and id=? and user_id=?",[lien_id,msg_id,user_id]);
     }
-    
+    res.redirect("home")
 })
 
 app.listen(port,() => {
-    //console.log("Listening on port ", port)
+    ////console.log("Listening on port ", port)
 })
 

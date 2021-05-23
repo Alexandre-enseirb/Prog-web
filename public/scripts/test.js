@@ -6,14 +6,8 @@ try{
 
 if (document.activeElement.id="post_content"){
     title.type="text";
-    alert("HEY !!!");
-}else{
-    alert("NIET");
 }
 
-function test(){
-    alert("Hello !");
-}
 
 function update_vote(vote_amnt,vote_type){
     /*

@@ -1,22 +1,19 @@
 extends layout
 block body
     header
-        if (user_id)
-            p(style="display: none", id="user_id")=user_id
         nav(style="max-width:1580px,text-align:center")
             div.row.align-items-left.py-2
                 div.col-1
-                    img(src="../images/logo.png",style="margin-left:10px")
+                    img(src="../images/logo.png" style="padding-left:10px;")
                 div.col.2(style="text-align:left")
-                    h4.text-muted.m-0="Bluedit"
+                    h4(style="padding-top:8px;").text-muted.m-0="Bluedit"
                 div.col.d-flex.justify-content-end
 
                     ul.nav.nav-pills
                         if (logged)
-                            if (admin) 
-                                p="Miko"
-                            else
-                                p="It's Lunatic Tiiiiiiime"
+                            p(style="padding-top:8px;padding-right:8px;")="Welcome back "+username
+                            li(style="padding-right:5px;").nav-item 
+                                a.nav-link.active( href="http://localhost:3000/profile/"+user_id)="Profile"
                         else
                             li.nav-item
                                 a.nav-link.active(href="http://localhost:3000/authen")="Log in"
@@ -24,7 +21,9 @@ block body
                                 a.nav-link.active(href="http//localhost:3000/inscription")="Sign up"
 
     section
+    p(style="width: 0px; height: 0px;", id="user_id")=user_id  
         div.container.bg-dark.text-light.py-3(style="border-radius:4px;")
+            
             div(style="width:40px")
                 p(style="margin-bottom:0px;padding-left:5px;margin-top:6px;float:left", id="votes"+lien.id+"0")=lien.votes
                 if(lien.upvoted)
@@ -46,58 +45,39 @@ block body
                 div.row
                     p(style="font-size:14pt;")=lien.Title
                     
-                div.row
+                div.row(style="padding-left:20px;")
                     !{lien.Content}
-        
+            
+            div.row(style="padding-top:20px;")
+                div.col-9.col-lg-9
+                    form(action="/comment",method="POST")
+                        input(type="text",name="comment",placeholder="Répondre...")
+                        input(type="hidden",name="post_id",value=lien.id)
+                        input(type="submit" value="Envoyer")
             if (msg)
-                if (msg.non_iterable)
+                
+                each ms in msg
                     ul
-                        div(style="width:40px;padding-top:20px;")
-                            p(style="margin-bottom:0px;padding-left:5px;margin-top:6px;float:left", id="votes"+lien.id.toString()+msg.id.toString())=msg.votes
-                            if(msg.upvoted)
-                                img(style="float: left;",src="../images/upvote_2.png", onclick='sendVote('+lien.id+','+msg.id+',0,1)', id=lien.id.toString()+msg.id.toString()+'U', alt="D")="D" 
+                        div(style="width:40px;padding-top:20px")
+                            p(style="margin-bottom:0px;padding-left:5px;margin-top:6px;float:left", id="votes"+lien.id.toString()+ms.id.toString())=ms.votes
+                            if(ms.upvoted)
+                                img(style="float: left;",src="../images/upvote_2.png", onclick='sendVote('+lien.id+','+ms.id+',0,1)', id=lien.id.toString()+ms.id.toString()+'U', alt="D")="D" 
                             else
-                                img(style="float: left;",src="../images/upvote.png", onclick='sendVote('+lien.id+','+msg.id+',1,1)', id=lien.id.toString()+msg.id.toString()+'U', alt="U")="U"
-                        
-                        
-                            if (msg.downvoted)
-                                img(style="float: left;",src="../images/downvote_2.png", onclick='sendVote('+lien.id+','+msg.id+',1,0)', id=lien.id.toString()+msg.id.toString()+'D', alt="U")="U"
- 
+                                img(style="float: left;",src="../images/upvote.png", onclick='sendVote('+lien.id+','+ms.id+',1,1)', id=lien.id.toString()+ms.id.toString()+'U', alt="U")="U"
+                    
+                    
+                            if (ms.downvoted)
+                                img(style="float: left;",src="../images/downvote_2.png", onclick='sendVote('+lien.id+','+ms.id+',1,0)', id=lien.id.toString()+ms.id.toString()+'D', alt="U")="U"
+
                             else
-                                img(style="float: left;",src="../images/downvote.png", onclick='sendVote('+lien.id+','+msg.id+',0,0)', id=lien.id.toString()+msg.id.toString()+'D', alt="D")="D"
+                                img(style="float: left;",src="../images/downvote.png", onclick='sendVote('+lien.id+','+ms.id+',0,0)', id=lien.id.toString()+ms.id.toString()+'D', alt="D")="D"
                         div(style="width:auto;padding-left:60px;background-color='#222222';")
-                            div.row
-                                p(style="font-size:10pt;margin-bottom:0px;width:max-content;")="posté par "+msg.authorName
-                                img(style="width:30px;padding:0;padding-left:10px",src="../images/edit.png", onclick='edit('+lien.id.toString()+',0)', id='edit'+lien.id.toString()+msg.id.toString()+'-'+msg.user_id.toString())
-                                img(style="width:30px;padding:0;padding-left:10px;",src="../images/delete.png", onclick='del('+lien.id.toString()+',0)', id='delete'+lien.id.toString()+msg.id.toString()+'-'+msg.user_id.toString())
-
-                            div.row
-                                !{msg.Content}
-  
-                else
-                    each ms in msg
-                        ul
-                            div(style="width:40px")
-                                p(style="margin-bottom:0px;padding-left:5px;margin-top:6px;float:left", id="votes"+lien.id.toString()+ms.id.toString())=ms.votes
-                                if(ms.upvoted)
-                                    img(style="float: left;",src="../images/upvote_2.png", onclick='sendVote('+lien.id+','+ms.id+',0,1)', id=lien.id.toString()+ms.id.toString()+'U', alt="D")="D" 
-                                else
-                                    img(style="float: left;",src="../images/upvote.png", onclick='sendVote('+lien.id+','+ms.id+',1,1)', id=lien.id.toString()+ms.id.toString()+'U', alt="U")="U"
-                        
-                        
-                                if (ms.downvoted)
-                                    img(style="float: left;",src="../images/downvote_2.png", onclick='sendVote('+lien.id+','+ms.id+',1,0)', id=lien.id.toString()+ms.id.toString()+'D', alt="U")="U"
- 
-                                else
-                                    img(style="float: left;",src="../images/downvote.png", onclick='sendVote('+lien.id+','+ms.id+',0,0)', id=lien.id.toString()+ms.id.toString()+'D', alt="D")="D"
-                            div(style="width:auto;padding-left:60px;background-color='#222222';")
-                            div.row
-                                p(style="font-size:10pt;margin-bottom:0px;width:max-content;")="posté par "+msg.authorName
-                                img(style="width:30px;padding:0;padding-left:10px",src="../images/edit.png", onclick='edit('+lien.id.toString()+',0)', id='edit'+lien.id.toString()+ms.id.toString()+'-'+ms.user_id.toString())
-                                img(style="width:30px;padding:0;padding-left:10px;",src="../images/delete.png", onclick='del('+lien.id.toString()+',0)', id='delete'+lien.id.toString()+ms.id.toString()+'-'+ms.user_id.toString())
-
-                            div.row
-                                !{msg.Content}     
+                        div.row
+                            p(style="font-size:10pt;margin-bottom:0px;width:max-content;")="posté par "+ms.authorName
+                            img(style="width:30px;padding:0;padding-left:10px",src="../images/edit.png", onclick='edit('+lien.id.toString()+','+ms.id.toString()+')', id='edit'+lien.id.toString()+ms.id.toString()+'-'+ms.user_id.toString())
+                            img(style="width:30px;padding:0;padding-left:10px;",src="../images/delete.png", onclick='del('+lien.id.toString()+','+ms.id.toString()+')', id='delete'+lien.id.toString()+ms.id.toString()+'-'+ms.user_id.toString())
+                        div.row(style="padding-left:20px;")
+                            !{ms.Content}     
 
 
 
