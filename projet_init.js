@@ -13,13 +13,13 @@ async function createusername(db){
 
 async function createlink(db){
     await db.run(`
-    INSERT INTO lien (Title,Content,user_id,votes) VALUES("Magnifique site","https://www.google.fr","1","0")
+    INSERT INTO lien (Title,Content,user_id,votes) VALUES("Magnifique site","https://www.google.fr","1","1")
     `)
 }
 
 async function createmessage(db){
   await db.run(`
-  INSERT INTO message (Content,user_id,lien_id,votes) VALUES("Excellent site pour faire des recherches !","2","1","0")
+  INSERT INTO message (Content,user_id,lien_id,votes) VALUES("Excellent site pour faire des recherches !","2","1","1")
   `)
 }
 

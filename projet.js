@@ -333,7 +333,7 @@ app.get('/test',async(req,res)=>{
     }
     
     // VOTES PROCESSING
-    for (tmp of votes){                              // iterates through the votes
+    /*for (tmp of votes){                              // iterates through the votes
         if (tmp.response_id==0){                     // if it's an original link
             for (post of posts){                     // iterates through links
                 if (post.id==tmp.lien_id){           // if the vote corresponds
@@ -356,7 +356,7 @@ app.get('/test',async(req,res)=>{
             }
         }
         
-    }
+    }*/
 
     // VOTES DISPLAY FOR USER
     for (const user_vote of user_votes){             // iterates through the user's votes
@@ -441,30 +441,97 @@ app.post('/comment',async(req,res)=>{
 })
 
 app.post("/vote",async(req,res)=>{
+    /*
+     * This post serves two purposes
+     *
+     * First, it checks if a given user has already upvoted/downvoted a link/comment
+     *  if a vote already exists for the given link/comment, it is updated
+     *  else, we create a new vote for this link/comment, stored in votes, linked to user_id
+     *
+     * Then, it gets the link/comment, extracts their votes count, and adds/substracts 1 or 2
+     *
+     * The only case where two votes have to be counted is if we go from an upvote to a downvote
+     *  or the other way
+     *
+     */
+
     const db=await openDb();
     let user_id=req.session.user_id; //temporary
-    user_id=1; 
+    let previous_vote=undefined;
+    let current_vote=req.body.vote_type;
+    user_id=1; // [DEBUG] 
     
+    // check if the user exists
     if (user_id==undefined){
         console.log("ERREUR ! Un utilisateur non connecté a tenté de voter.");
         return;
     } 
     
+    // Query for vote
     const Votes= await db.get(`SELECT * FROM votes WHERE lien_id=? and response_id=? and user_id=?`,[req.body.msg_id,req.body.comm_id, user_id]);
 
     console.log(Votes)
     
     if (Votes){
-        // user already voted
+        // user already votedi
+        previous_vote=Votes.type;
         const updateRequest= await db.prepare("UPDATE votes SET type=? WHERE id=?")
         await updateRequest.run([req.body.vote_type, Votes.id])
         console.log("updated vote")
-        return;
+        
+    }else{
+
+        // user didn't vote
+        await addVote(db,[req.body.msg_id,  user_id,req.body.comm_id, req.body.vote_type]);
+        console.log("created new vote")
     }
 
+    // updating the link/comment's vote count
 
-    await addVote(db,[req.body.msg_id,  user_id,req.body.comm_id, req.body.vote_type]);
-    console.log("created new vote")
+    if (req.body.comm_id){
+        // we're looking for a comment
+        const comment=await db.get(`SELECT * FROM message WHERE id=?`,[req.body.comm_id]);
+        
+        if (current_vote){                           // we're upvoting
+            if (previous_vote!=undefined){           // we were downvoting
+                // if vote cancel : change 1. Else, change 2.
+                comment.votes+=(req.body.cancel ? 1:2);
+            }else{                                   // we just upvoted first time
+                comment.votes+=1;
+            } 
+        }else{                                       // we're downvoting
+            if (previous_vote){                      // we were upvoting
+                comment.votes-=(req.body.cancel ? 1:2);
+            }else{
+                comment.votes-=1;
+            }
+        }
+        const updateComment=await db.prepare("UPDATE message SET votes=? WHERE id=?")
+        await updateComment.run([comment.votes, req.body.comm_id])
+    }else{                                           // means comm_id is 0 : we're a link
+        const link=await db.get(`SELECT * FROM lien WHERE id=?`,[req.body.msg_id]);
+        console.log(current_vote, previous_vote, link.votes);
+        if (current_vote){                           // we're upvoting
+            if (previous_vote!=undefined){           // we were downvoting
+                // if vote cancel : change 1. Else, change 2.
+                link.votes+=(req.body.cancel ? 1:2);
+            }else{                                   // we just upvoted first time
+                link.votes+=1;
+            } 
+        }else{                                       // we're downvoting
+            if (previous_vote){                      // we were upvoting
+                link.votes-=(req.body.cancel ? 1:2);
+            }else{
+                link.votes-=1;
+            }
+        }
+        const updateLink = await db.prepare("UPDATE lien SET votes=? WHERE id=?")
+        await updateLink.run([link.votes, req.body.msg_id])
+    }
+    
+
+
+        
 
 
 
@@ -473,6 +540,32 @@ app.post("/vote",async(req,res)=>{
     //    console.log(req.body);    
 });
 
+app.get("/post/:id",async(req,res)=>{
+    const db=await openDb();
+    const post=db.get(`SELECT * FROM lien WHERE id=?`,[req.query.id]);
+    let votes_amount=0;
+
+
+    // beforehand, we check if the post does exist
+    if (post==undefined){
+        status=404; // not found
+        res.redirect("/test",status); // back to mainpage
+    }
+
+    // now we can process and render
+    
+    
+
+    const user_vote=db.get(`SELECT * FROM votes WHERE lien_id=? and user_id=?`,[req.query.id,req.session.user_id]);
+    if (user_vote.type){
+        post.upvoted=true;
+    }else{
+        post.downvoted=true;
+    }
+
+    data.lien=post;
+    res.render("post",data);
+})
 
 app.listen(port,() => {
     console.log("Listening on port ", port)

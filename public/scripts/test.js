@@ -53,6 +53,8 @@ function sendVote(msg_id, comm_id, vote_type,value){
      * no return code
      */
     
+    let cancel=false; // will help the server decide if a vote was canceled
+
     // gets the display for the votes
     const par=document.getElementById("votes"+msg_id.toString()+comm_id.toString());
     
@@ -92,7 +94,8 @@ function sendVote(msg_id, comm_id, vote_type,value){
         const btn=document.getElementById(msg_id.toString()+comm_id.toString()+"U");
         // and we invert our button
         btnU.setAttribute("onclick", "javascript: sendVote("+msg_id+","+comm_id+","+(vote_type ? 0:1)+",1)")
-        btnU.alt="D";
+        btnU.alt=(btnU.alt=="U" ? "D":"U");
+        cancel=(btnU.alt=="U" ? true:false); // alt has been changed the line before, we check if we're back to upvoting
         btnU.src=(btnU.src=="http://localhost:3000/images/upvote.png" ? "images/upvote_2.png":"images/upvote.png");
         console.log("updated btnU");
     }else{
@@ -109,7 +112,8 @@ function sendVote(msg_id, comm_id, vote_type,value){
         const btn=document.getElementById(msg_id.toString()+comm_id.toString()+"U");
         // and we invert our button
         btnD.setAttribute("onclick", "javascript: sendVote("+msg_id+","+comm_id+","+(vote_type ? 0:1)+",0)")
-        btnD.alt="U";
+        btnD.alt=(btnD.alt=="D" ? "U":"D");
+        cancel=(btnD.alt=="D" ? true:false); // again, we check if we're back to downvoting
         btnD.src=(btnD.src=="http://localhost:3000/images/downvote_2.png" ? "images/downvote.png":"images/downvote_2.png")
     }
     
@@ -121,7 +125,8 @@ function sendVote(msg_id, comm_id, vote_type,value){
     var data = {
         msg_id: msg_id,
         comm_id: comm_id,
-        vote_type: vote_type
+        vote_type: vote_type,
+        cancel: cancel
     };
     xhr.open('POST','/vote');
     xhr.setRequestHeader('Content-Type', 'application/json');
