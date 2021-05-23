@@ -558,18 +558,11 @@ app.get("/post/:id",async(req,res)=>{
             non_iterable=true;
         }
     }
-    const keys=comment_votes.keys
-    /*
-    if (keys.length<2){
-        //singleton process
-    }else{
-        for (com of comment_votes){
-            if (com.response_id){ // if not responding to original link
+    
+    // looking for names
 
-            }
-        }
-    }
-    */
+
+
     data.lien=post;
     data.msg=responses;
     data.msg.non_iterable=non_iterable
