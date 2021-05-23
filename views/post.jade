@@ -1,6 +1,8 @@
 extends layout
 block body
     header
+        if (user_id)
+            p(style="display: none", id="user_id")=user_id
         nav(style="max-width:1580px,text-align:center")
             div.row.align-items-left.py-2
                 div.col-1
@@ -38,9 +40,12 @@ block body
                     img(style="float: left;",src="../images/downvote.png", onclick='sendVote('+lien.id+',0,0,0)', id=lien.id+'0D', alt="D")="D"
             div(style="width:auto;padding-left:60px;background-color='#222222';")
                 div.row
-                    p(style="font-size:10pt;margin-bottom:0px;")="posté par "+lien.authorName
+                    p(style="font-size:10pt;margin-bottom:0px;padding-right:0px;width:max-content;")="posté par "+lien.authorName
+                    img(style="width:30px;padding:0;padding-left:10px",src="../images/edit.png", onclick='edit('+lien.id.toString()+',0)', id='edit'+lien.id.toString()+'0-'+lien.user_id.toString())
+                    img(style="width:30px;padding:0;padding-left:10px;",src="../images/delete.png", onclick='del('+lien.id.toString()+',0)', id='delete'+lien.id.toString()+'0-'+lien.user_id.toString())
                 div.row
                     p(style="font-size:14pt;")=lien.Title
+                    
                 div.row
                     !{lien.Content}
         
@@ -62,7 +67,10 @@ block body
                                 img(style="float: left;",src="../images/downvote.png", onclick='sendVote('+lien.id+','+msg.id+',0,0)', id=lien.id.toString()+msg.id.toString()+'D', alt="D")="D"
                         div(style="width:auto;padding-left:60px;background-color='#222222';")
                             div.row
-                                p(style="font-size:10pt;margin-bottom:0px;")="posté par "+msg.authorName
+                                p(style="font-size:10pt;margin-bottom:0px;width:max-content;")="posté par "+msg.authorName
+                                img(style="width:30px;padding:0;padding-left:10px",src="../images/edit.png", onclick='edit('+lien.id.toString()+',0)', id='edit'+lien.id.toString()+msg.id.toString()+'-'+msg.user_id.toString())
+                                img(style="width:30px;padding:0;padding-left:10px;",src="../images/delete.png", onclick='del('+lien.id.toString()+',0)', id='delete'+lien.id.toString()+msg.id.toString()+'-'+msg.user_id.toString())
+
                             div.row
                                 !{msg.Content}
   
@@ -82,7 +90,14 @@ block body
  
                                 else
                                     img(style="float: left;",src="../images/downvote.png", onclick='sendVote('+lien.id+','+ms.id+',0,0)', id=lien.id.toString()+ms.id.toString()+'D', alt="D")="D"
-                             
+                            div(style="width:auto;padding-left:60px;background-color='#222222';")
+                            div.row
+                                p(style="font-size:10pt;margin-bottom:0px;width:max-content;")="posté par "+msg.authorName
+                                img(style="width:30px;padding:0;padding-left:10px",src="../images/edit.png", onclick='edit('+lien.id.toString()+',0)', id='edit'+lien.id.toString()+ms.id.toString()+'-'+ms.user_id.toString())
+                                img(style="width:30px;padding:0;padding-left:10px;",src="../images/delete.png", onclick='del('+lien.id.toString()+',0)', id='delete'+lien.id.toString()+ms.id.toString()+'-'+ms.user_id.toString())
+
+                            div.row
+                                !{msg.Content}     
 
 
 

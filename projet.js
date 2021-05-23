@@ -103,7 +103,7 @@ function URLify(posts_responses){
                         if (word[index]=='/'){
                             tmp++;
                         }
-                    CompleteURL="<a href="+word+">"+URL+"</a>";
+                    CompleteURL="<a style='width:max-content;' href="+word+">"+URL+"</a>";
                     }
                 words[words.indexOf(word)]=CompleteURL;
                 tmp=0;
@@ -580,9 +580,7 @@ app.get("/post/:id",async(req,res)=>{
     const db=await openDb();
     const post=await db.get(`SELECT * FROM lien WHERE id=?`,[req.params.id]);
     const responses=await db.get(`SELECT * FROM message WHERE lien_id=?`,[req.params.id]);
-    let post_responses=[post,responses];
-    URLify(post_responses);
-    let data={}
+    
 
     // beforehand, we check if the post does exist
     if (post==undefined){
@@ -591,7 +589,9 @@ app.get("/post/:id",async(req,res)=>{
     }
 
     // now we can process and render
-    
+    let post_responses=[post,responses];
+    URLify(post_responses);
+    let data={}
     let user_id=1;
     
     const user_vote=await db.get(`SELECT * FROM votes WHERE lien_id=? and response_id=0 and user_id=?`,[req.params.id,1]);
@@ -636,8 +636,34 @@ app.get("/post/:id",async(req,res)=>{
     data.lien=post;
     data.msg=responses;
     data.msg.non_iterable=non_iterable
+    data.user_id=1;
     console.log(data)
     res.render("post",data);
+})
+
+app.post("/delete",async(req,res)=>{
+    /*
+     * handles deletion of a post
+     *
+     * verifies the request is legal
+     *  i.e. it was send by the right user
+     *
+     */
+    const db = await openDb();
+    const lien_id=req.body.lien_id;
+    const msg_id=req.body.msg_id;
+    const user_id=req.body.user_id;
+    
+    if (msg_id){
+        // we're deleting a comment
+        await db.run("DELETE FROM message WHERE lien_id=? and id=? and user_id=?",[lien_id,msg_id,user_id])
+        
+    }else{
+        // we delete a post (and all the comments that come with it
+        await db.run("DELETE FROM lien WHERE id=? and user_id=?",[lien_id, user_id]);
+        await db.all("DELETE FROM message WHERE lien_id=? and id=? and user_id=?",[lien_id,msg_id,user_id]);
+    }
+    
 })
 
 app.listen(port,() => {
