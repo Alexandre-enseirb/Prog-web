@@ -23,6 +23,16 @@ html
         font-family:"Arial";
         box-shadow:10px 10px 15px  black  ;
         }
+        #container_vote{
+        background:#FF9966;
+        color:#990099;
+        padding:25px;
+        margin:100px auto 0px;
+        width:100%;
+        text-align:center;
+        font-family:"Arial";
+        box-shadow:10px 10px 15px  black  ;
+        }
         picture{
             width:150px;
             height:150px;
@@ -56,4 +66,37 @@ html
             each respon in response  
                 p=respon.Content
                 hr
-          
+      #container_vote
+            h4.text-center="My upvote post"
+            
+            each post in allliens 
+                each vote in votes
+                    if(vote.type == 1)
+                        if(vote.lien_id == post.id)
+                            p=post.Content
+                            hr
+            h4.text-center="My upvote response"
+            
+            each respon in allresponse
+                each vote in votes
+                    if(vote.type == 1)
+                        if(vote.response_id==respon.id)
+                            p=respon.Content
+                            hr
+
+            h4.text-center="My downvotes post"
+            
+            each post in allliens 
+                each vote in votes
+                    if(vote.type != 1)
+                        if(vote.lien_id == post.id)
+                            p=post.Content
+                            hr
+            h4.text-center="My downvote response" 
+            
+            each respon in allresponse
+                each vote in votes
+                    if(vote.type != 1)
+                        if(vote.response_id==respon.id)
+                            p=respon.Content
+                            hr      
