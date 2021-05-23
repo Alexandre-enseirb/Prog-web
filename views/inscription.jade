@@ -2,7 +2,7 @@ doctype html
 html
   head
     meta(charset='utf-8')
-    title 无标题文档
+    title Monsite
     style.
       #container{
       background:rgba(255,255,255,0.5);
@@ -55,6 +55,9 @@ html
           input(type="password" name="secretcode" placeholder="secret code" required='') 
         br
         input(type="submit" value="Sign up!") 
+        
+      hr
+      a.nav-link.active(href="http://localhost:3000/authen")="have compte? log in here"
         if (nopasswd)
             p="Veuillez renseigner un mot de passe"
         if (shortUsername)
