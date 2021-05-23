@@ -323,7 +323,17 @@ app.get('/profile/:id',async(req,res)=>{
         SELECT * FROM message
         where user_id=?
         `,[youruserid])
-        res.render("prof",{posts:posts,response:response,useractive:useractive})        
+        const votes = await db.all(`
+        SELECT * FROM votes
+        where user_id=?
+        `,[youruserid])
+        const allliens = await db.all(`
+        SELECT * FROM lien
+        `)
+        const allresponse = await db.all(`
+        SELECT * FROM message
+        `)
+        res.render("prof",{posts:posts,response:response,useractive:useractive,votes:votes,allliens:allliens,allresponse:allresponse})        
     }
     else
     {
