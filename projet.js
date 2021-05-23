@@ -59,18 +59,53 @@ async function addComment(db, comment){
     const insertRequest = await db.prepare("INSERT INTO message (Content, user_id, lien_id,votes) VALUES (?,?,?,0)")
     return await insertRequest.run(comment)
 }
-/*
-async function addVote(db, Vote_type, Vote){
-    if (Vote_type){
-        // 1 is for upvote
-        const insertRequest = await db.prepare("INSERT INTO upvotes (lien_id, response_id, user_id) VALUES (?,?,?)")
-    }
-    else
-    {
-        const insertRequest = await db.prepare("INSERT INTO downvotes (lien_id, response_id, user_id) VALUES (?,?,?)")
-    }
-    return await insertRequest.run(Vote)
-}*/
+
+
+function URLify(posts_responses){
+    let tmp=0;
+    let URL="";
+    let keys;
+    console.log(posts_responses);
+    for (type of posts_responses){                   // we check for url in every post
+       type=[type]; 
+            for (post of type){
+            
+                console.log(post)
+                content=post.Content;                    // therefore we check the content
+                words=content.split(" ");                // we split it per word
+                for (const word of words){               // for every word of our content
+                    if (word.indexOf("http")==0){        // check if it's an URL
+                        URL="";                          // variable reset
+                        for (const index in word){       // if yes, we do a last check on it 
+                    
+                            if (tmp==2){                 // means we passed the "http://" or "https://"
+                                URL=URL+word[index];     // we create a string with the URL
+                            }
+                            if (tmp==3){                 // means we've got the "www.something.com"
+                                break;
+                            }
+                            if (word[index]=='/'){
+                                tmp++;
+                            }
+                        CompleteURL="<a href="+word+">"+URL+"</a>";
+                        }
+                    words[words.indexOf(word)]=CompleteURL;
+                    tmp=0;
+                    changed=true;
+                    }
+                }
+                if (changed){
+                    changed=false;
+                    post.Content="";
+                    for (let i=0;i<words.length;i++){
+                        post.Content=post.Content.concat(' ',words[i]);
+                    }
+                    console.log(post.Content)
+                }
+            }
+        }
+    
+}
 
 async function addVote(db, Vote){
     const insertRequest = await db.prepare("INSERT INTO votes (lien_id, user_id, response_id, type) VALUES (?,?,?,?)")
@@ -329,69 +364,9 @@ app.get('/test',async(req,res)=>{
     let URL="";
     let CompleteURL="";
     let changed;
-    for (type of posts_responses){                   // we check for url in every post
-        for (post of type){
-            
-            console.log(post)
-            content=post.Content;                    // therefore we check the content
-            words=content.split(" ");                // we split it per word
-            for (const word of words){               // for every word of our content
-                if (word.indexOf("http")==0){        // check if it's an URL
-                    URL="";                          // variable reset
-                    for (const index in word){       // if yes, we do a last check on it 
-                    
-                        if (tmp==2){                 // means we passed the "http://" or "https://"
-                            URL=URL+word[index];     // we create a string with the URL
-                        }
-                        if (tmp==3){                 // means we've got the "www.something.com"
-                            break;
-                        }
-                        if (word[index]=='/'){
-                            tmp++;
-                        }
-                    CompleteURL="<a href="+word+">"+URL+"</a>";
-                    }
-                words[words.indexOf(word)]=CompleteURL;
-                tmp=0;
-                changed=true;
-                }
-            }
-            if (changed){
-                changed=false;
-                post.Content="";
-                for (let i=0;i<words.length;i++){
-                    post.Content=post.Content.concat(' ',words[i]);
-                }
-                console.log(post.Content)
-            }
-        }
-    }
     
-    // VOTES PROCESSING
-    /*for (tmp of votes){                              // iterates through the votes
-        if (tmp.response_id==0){                     // if it's an original link
-            for (post of posts){                     // iterates through links
-                if (post.id==tmp.lien_id){           // if the vote corresponds
-                    if (tmp.type){                   
-                        post.votes++;                // add 1 if upvote
-                    }else{
-                        post.votes--;                // substract 1 if downvote
-                    }
-                }
-            }
-        }else{                                      
-            for (rep of response){                   // iterate through comments
-                if ((rep.lien_id==tmp.lien_id) && (rep.id==tmp.response_id)){
-                    if (tmp.type){
-                        rep.votes++;                 // add 1 if upvote
-                    }else{
-                        rep.votes--;                 // substract 1 if downvote
-                    }
-                }
-            }
-        }
-        
-    }*/
+    URLify(posts_responses) 
+    
 
     // VOTES DISPLAY FOR USER
     for (const user_vote of user_votes){             // iterates through the user's votes
@@ -576,30 +551,58 @@ app.post("/vote",async(req,res)=>{
     //    console.log(req.body);    
 });
 
+app.get("/post",async(req,res)=>{
+    res.redirect("/post/1"); //TEMPORARY REDIRECTION
+});
+
 app.get("/post/:id",async(req,res)=>{
     const db=await openDb();
-    const post=db.get(`SELECT * FROM lien WHERE id=?`,[req.query.id]);
-    let votes_amount=0;
-
+    const post=await db.get(`SELECT * FROM lien WHERE id=?`,[req.params.id]);
+    const responses=await db.get(`SELECT * FROM message WHERE lien_id=?`,[req.params.id]);
+    let post_responses=[post,responses];
+    URLify(post_responses);
+    let data={}
 
     // beforehand, we check if the post does exist
     if (post==undefined){
         status=404; // not found
-        res.redirect("/test",status); // back to mainpage
+        res.redirect(status,"/test"); // back to mainpage
     }
 
     // now we can process and render
     
+    let user_id=1;
     
-
-    const user_vote=db.get(`SELECT * FROM votes WHERE lien_id=? and user_id=?`,[req.query.id,req.session.user_id]);
-    if (user_vote.type){
-        post.upvoted=true;
+    const user_vote=await db.get(`SELECT * FROM votes WHERE lien_id=? and response_id=0 and user_id=?`,[req.params.id,1]);
+    
+    if (user_vote==undefined){ // never voted
+        //pass
     }else{
-        post.downvoted=true;
+        if (user_vote.type){
+            post.upvoted=true;
+        }else if (user_vote.type==0){
+            post.downvoted=true;
+        }
     }
+    let non_iterable=false;
+    const comment_votes=await db.all(`SELECT * FROM votes WHERE lien_id=? and user_id=?`,[req.params.id,user_id]);
+    for (const c of comment_votes){
+        if (typeof(c) === "Object"){
+            non_iterable=false;
+            break;
+        }else{
+            non_iterable=true;
+        }
+    }
+    
+    // looking for names
+
+
 
     data.lien=post;
+    data.msg=responses;
+    data.msg.non_iterable=non_iterable
+    console.log(data)
     res.render("post",data);
 })
 
