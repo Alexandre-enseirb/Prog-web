@@ -58,6 +58,10 @@ html
           input(type="password" name="secretcode" placeholder="secret code" required='') 
         br
         input(type="submit" value="log in!") 
+        hr
+
+        a.nav-link.active(href="http://localhost:3000/inscription")="don't have compte? log in there!"
+
         if (nopasswd)
             p="Veuillez renseigner un mot de passe"
         if (shortUsername)

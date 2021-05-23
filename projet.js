@@ -227,22 +227,57 @@ app.get('/home',async(req, res) =>{
     }
     const db = await openDb()
     const id = req.params.id 
+    console.log("id is ",id)
     const posts = await db.all(`
     SELECT * FROM lien
-    `,[id])
+    `)
     const response = await db.all(`
     SELECT * FROM message
-    `,[id])
+    `)
     console.log(posts)
     data.posts = posts
     data.response = response
     res.render("home",data)
 })
 
+app.get('/profile/:id',async(req,res)=>{
+    const db = await openDb()
+    const id= req.params
+    console.log("id is")
+    
+    const ourusers = await db.all(`
+    SELECT * FROM user
+    `)
+    console.log(id)
+    if(req.params.id)
+    {
+        const youruserid = req.params.id ? req.params.id : ""
+        const useractive = ourusers.find(c=> c.id == youruserid)
+        const posts = await db.all(`
+        SELECT * FROM lien
+        where user_id=?
+        `,[youruserid])
+        const response = await db.all(`
+        SELECT * FROM message
+        where user_id=?
+        `,[youruserid])
+        res.render("prof",{posts:posts,response:response,useractive:useractive})        
+    }
+    else
+    {
+        res.redirect("/home")
+    }
+
+})
+
+
+
 app.get('/WIP',(req,res)=>{
     // placeholder
     res.render("wip");
 })
+
+
 
 app.get('/test',async(req,res)=>{
     // a page to edit anytime we want to make some tests without breaking the rest
@@ -429,6 +464,8 @@ app.post('/comment',async(req,res)=>{
     addComment(db, [comment,user_id,post_id])
     res.redirect("test")
 })
+
+
 
 app.listen(port,() => {
     console.log("Listening on port ", port)
