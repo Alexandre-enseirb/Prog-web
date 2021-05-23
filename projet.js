@@ -62,12 +62,15 @@ async function addComment(db, comment){
 
 
 function URLify(posts_responses){
+    console.log("-------------")
+    console.log(posts_responses)
+    console.log("-----------")
     let tmp=0;
     let URL="";
     let keys;
     console.log(posts_responses);
     for (type of posts_responses){                   // we check for url in every post
-       type=[type]; 
+       //type=[type]; 
             for (post of type){
             
                 console.log(post)
@@ -263,6 +266,8 @@ app.post('/signin',async(req,res)=>{
     
     if(result != ""&& secret_verifi != ""&& result[0].id==secret_verifi[0].id)      // correct user
     {
+        req.session.logged=true;
+        req.session.user_id = result.user_id
         res.redirect("/home")                                                       // login succesful
     }
     else{
@@ -278,6 +283,9 @@ app.get('/home',async(req, res) =>{
     data={};
     if (req.session.logged){
         data.logged=true;
+    }
+    else{
+        res.redirect('/authen')
     }
     const db = await openDb()
     const id = req.params.id 
