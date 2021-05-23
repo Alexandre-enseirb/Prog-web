@@ -60,6 +60,17 @@ async function addComment(db, comment){
     return await insertRequest.run(comment)
 }
 
+function isIterable(obj){
+    try{
+        for (const tmp of obj){
+            break;
+        }
+    }
+    catch(TypeError){
+        return false;
+    }
+    return true;
+}
 
 function URLify(posts_responses){
     console.log("-------------")
@@ -70,43 +81,45 @@ function URLify(posts_responses){
     let keys;
     console.log(posts_responses);
     for (type of posts_responses){                   // we check for url in every post
-       //type=[type]; 
-            for (post of type){
+        if (!isIterable(type)){
+            type=[type];
+        }
+        for (post of type){
             
-                console.log(post)
-                content=post.Content;                    // therefore we check the content
-                words=content.split(" ");                // we split it per word
-                for (const word of words){               // for every word of our content
-                    if (word.indexOf("http")==0){        // check if it's an URL
-                        URL="";                          // variable reset
-                        for (const index in word){       // if yes, we do a last check on it 
-                    
-                            if (tmp==2){                 // means we passed the "http://" or "https://"
-                                URL=URL+word[index];     // we create a string with the URL
-                            }
-                            if (tmp==3){                 // means we've got the "www.something.com"
-                                break;
-                            }
-                            if (word[index]=='/'){
-                                tmp++;
-                            }
-                        CompleteURL="<a href="+word+">"+URL+"</a>";
+            console.log(post)
+            content=post.Content;                    // therefore we check the content
+            words=content.split(" ");                // we split it per word
+            for (const word of words){               // for every word of our content
+                if (word.indexOf("http")==0){        // check if it's an URL
+                    URL="";                          // variable reset
+                    for (const index in word){       // if yes, we do a last check on it 
+                
+                        if (tmp==2){                 // means we passed the "http://" or "https://"
+                            URL=URL+word[index];     // we create a string with the URL
                         }
-                    words[words.indexOf(word)]=CompleteURL;
-                    tmp=0;
-                    changed=true;
+                        if (tmp==3){                 // means we've got the "www.something.com"
+                            break;
+                        }
+                        if (word[index]=='/'){
+                            tmp++;
+                        }
+                    CompleteURL="<a href="+word+">"+URL+"</a>";
                     }
-                }
-                if (changed){
-                    changed=false;
-                    post.Content="";
-                    for (let i=0;i<words.length;i++){
-                        post.Content=post.Content.concat(' ',words[i]);
-                    }
-                    console.log(post.Content)
+                words[words.indexOf(word)]=CompleteURL;
+                tmp=0;
+                changed=true;
                 }
             }
+            if (changed){
+                changed=false;
+                post.Content="";
+                for (let i=0;i<words.length;i++){
+                    post.Content=post.Content.concat(' ',words[i]);
+                }
+                console.log(post.Content)
+            }
         }
+    }
     
 }
 
@@ -614,8 +627,21 @@ app.get("/post/:id",async(req,res)=>{
     }
     
     // looking for names
-
-
+    const author=await db.get(`SELECT * FROM user WHERE id=?`,[post.user_id]);
+    console.log(author);
+    post.authorName=author.username;
+    let msgauthor;
+    console.log("------------------------------");
+    try{
+        for (const R of responses){
+            msgauthor=await db.get(`SELECT * FROM user WHERE id=?`,[R.user_id]);
+            R.authorName=msgauthor.username;
+        }
+    }catch(TypeError){
+        msgauthor=await db.get(`SELECT * FROM user WHERE id=?`,[responses.user_id]);
+        responses.authorName=msgauthor.username;
+    }
+    
 
     data.lien=post;
     data.msg=responses;
