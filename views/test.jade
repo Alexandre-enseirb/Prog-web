@@ -1,6 +1,5 @@
 extends layout
 block body
-    p="test"
     header
         nav(style="max-width:1580px,text-align:center")
             div.row.align-items-left.py-2
@@ -43,8 +42,17 @@ block body
                     
                     div(style="width:40px")
                         p(style="margin-bottom:0px;padding-left:5px;margin-top:6px;float:left", id="votes"+lien.id+"0")=lien.votes
-                        img(style="float: left;",src="images/upvote.png", onclick='sendVote('+lien.id+',0,1,1)', id=lien.id+'0U', alt="U")="U"
-                        img(style="float: left;",src="images/downvote.png", onclick='sendVote('+lien.id+',0,0,0)', id=lien.id+'0D', alt="D")="D"
+                        if(lien.upvoted)
+                            img(style="float: left;",src="images/upvote_2.png", onclick='sendVote('+lien.id+',0,0,1)', id=lien.id+'0U', alt="D")="D" 
+                        else
+                            img(style="float: left;",src="images/upvote.png", onclick='sendVote('+lien.id+',0,1,1)', id=lien.id+'0U', alt="U")="U"
+                        
+                        
+                        if (lien.downvoted)
+                            img(style="float: left;",src="images/downvote_2.png", onclick='sendVote('+lien.id+',0,1,0)', id=lien.id+'0D', alt="U")="U"
+ 
+                        else
+                            img(style="float: left;",src="images/downvote.png", onclick='sendVote('+lien.id+',0,0,0)', id=lien.id+'0D', alt="D")="D"
                     div(style="width:auto;padding-left:60px;background-color='#222222';")
                         div.row
                             p(style="font-size:10pt;margin-bottom:0px;")="posté par user il y a temps"

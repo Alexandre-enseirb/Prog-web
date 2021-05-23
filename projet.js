@@ -23,7 +23,7 @@ const sess={
     admin: false,
     username: undefined,
     logged: false,
-    user_id: undefined,
+    user_id: 1, // THIS IS PURELY TEMPORARY. MUST BE EDITED BEFORE PUSH
     cookie: {
         maxAge: 10000*3600
     },
@@ -271,6 +271,8 @@ app.get('/test',async(req,res)=>{
     }else{
         //res.redirect("/authen");
     }
+    const user_id=1
+    
     const db = await openDb()
     const id = req.params.id 
     const posts = await db.all(`
@@ -282,6 +284,8 @@ app.get('/test',async(req,res)=>{
     const votes = await db.all(`
     SELECT * FROM votes
     `,[id])
+    const user_votes = await db.all(`
+    SELECT * FROM votes WHERE user_id=?`,user_id);
 
     let posts_responses=[posts,response];
     console.log(posts_responses)
@@ -290,7 +294,7 @@ app.get('/test',async(req,res)=>{
     let URL="";
     let CompleteURL="";
     let changed;
-    for (type of posts_responses){                         // we check for url in every post
+    for (type of posts_responses){                   // we check for url in every post
         for (post of type){
             
             console.log(post)
@@ -327,39 +331,53 @@ app.get('/test',async(req,res)=>{
             }
         }
     }
-    for (tmp of votes){
-        console.log(tmp)
-        if (tmp.response_id==0){
-            for (post of posts){
-                if (post.id==tmp.lien_id){
-                    if (tmp.type){
-                        post.votes++;
+    
+    // VOTES PROCESSING
+    for (tmp of votes){                              // iterates through the votes
+        if (tmp.response_id==0){                     // if it's an original link
+            for (post of posts){                     // iterates through links
+                if (post.id==tmp.lien_id){           // if the vote corresponds
+                    if (tmp.type){                   
+                        post.votes++;                // add 1 if upvote
                     }else{
-                        post.votes--;
+                        post.votes--;                // substract 1 if downvote
                     }
                 }
             }
-        }else{
-            for (rep of response){
+        }else{                                      
+            for (rep of response){                   // iterate through comments
                 if ((rep.lien_id==tmp.lien_id) && (rep.id==tmp.response_id)){
                     if (tmp.type){
-                        rep.votes++;
+                        rep.votes++;                 // add 1 if upvote
                     }else{
-                        rep.votes--;
+                        rep.votes--;                 // substract 1 if downvote
                     }
                 }
             }
         }
         
     }
-    //posts[0].Content="Trop bien ce site : <a href='http://www.google.fr'>Google</a>";
-    //posts[1].Centent=`a href="http://www.google.fr"`
-    //posts[2].Content="a href='http://www.google.fr' text='Google'"
-    //posts[3].Content="a href='http://www.google.fr/'> Google"
+
+    // VOTES DISPLAY FOR USER
+    for (const user_vote of user_votes){             // iterates through the user's votes
+        if (user_vote.response_id){
+            // TODO
+        }else{
+            for (const post of posts){
+                if (user_vote.lien_id == post.id){
+                    if (user_vote.type){
+                        post.upvoted=true;
+            
+                    }else{
+                        post.downvoted=true;
+            
+                    }
+                }
+            }
+        }
+    }
     data.posts = posts
     data.response = response
-    console.log(response)
-    //console.log(data)
     res.render("test",data)
 })
 
@@ -424,11 +442,35 @@ app.post('/comment',async(req,res)=>{
 
 app.post("/vote",async(req,res)=>{
     const db=await openDb();
-    const user_id=1; //temporary
-    //console.log(tables[req.body.vote_type], [req.body.msg_id, req.body.comm_id, user_id])
-    console.log([req.body.msg_id,  user_id,req.body.comm_id, req.body.vote_type])
+    let user_id=req.session.user_id; //temporary
+    user_id=1; 
+    
+    if (user_id==undefined){
+        console.log("ERREUR ! Un utilisateur non connecté a tenté de voter.");
+        return;
+    } 
+    
+    const Votes= await db.get(`SELECT * FROM votes WHERE lien_id=? and response_id=? and user_id=?`,[req.body.msg_id,req.body.comm_id, user_id]);
+
+    console.log(Votes)
+    
+    if (Votes){
+        // user already voted
+        const updateRequest= await db.prepare("UPDATE votes SET type=? WHERE id=?")
+        await updateRequest.run([req.body.vote_type, Votes.id])
+        console.log("updated vote")
+        return;
+    }
+
+
     await addVote(db,[req.body.msg_id,  user_id,req.body.comm_id, req.body.vote_type]);
-    console.log(req.body);    
+    console.log("created new vote")
+
+
+
+    //console.log(tables[req.body.vote_type], [req.body.msg_id, req.body.comm_id, user_id])
+    //console.log([req.body.msg_id,  user_id,req.body.comm_id, req.body.vote_type])
+    //    console.log(req.body);    
 });
 
 
